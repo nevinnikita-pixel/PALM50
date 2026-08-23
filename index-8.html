@@ -1,0 +1,1626 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>PALM 50 — Release UI</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}:root{--bg:#fafaf7;--text:#15191e;--card:#fff;--blue:#3468c5;--grid:#bfd0e5;--h:100vh}html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;background:var(--bg);color:var(--text)}#app{height:var(--h);min-height:100dvh}.screen{display:none;width:100%;height:100%}.screen.active{display:flex}.paper{background:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px),var(--bg);background-size:28px 28px}.center{align-items:center;justify-content:center;padding:18px}.card{width:min(500px,94vw);background:var(--card);border-radius:22px;padding:22px;box-shadow:0 14px 40px #0002;text-align:center}.logo{font-size:50px;font-weight:950}.tgProfile{display:none;align-items:center;justify-content:center;gap:10px;margin:0 auto 10px}.tgProfile.show{display:flex}.tgAvatar{width:44px;height:44px;border-radius:50%;object-fit:cover;background:#dfe6ef;border:2px solid #fff;box-shadow:0 2px 10px #0002}.tgAvatarFallback{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#2f62bf;color:#fff;font-weight:950;font-size:18px}.tgIdentity{text-align:left;line-height:1.15}.tgIdentity b{display:block;font-size:15px}.tgIdentity span{font-size:11px;opacity:.65}.logo b{color:#2f62bf}.logo span{color:#d92c2c}button,input{font:inherit}button{border:0;border-radius:11px;padding:12px 14px;background:var(--blue);color:#fff;font-weight:900;cursor:pointer}button.alt{background:#465264}input{width:100%;padding:12px;border:2px solid #b7c0ca;border-radius:11px;margin:6px 0;background:var(--card);color:var(--text)}.stack{display:grid;gap:8px;margin-top:12px}.code{font-size:42px;font-weight:950;letter-spacing:5px;color:#2f62bf}.row{display:flex;justify-content:space-between;gap:10px;padding:11px;border:1px solid #ccd2d8;border-radius:11px;margin:7px 0}.muted{opacity:.7;font-size:13px}#game{flex-direction:column}header{height:68px;flex:0 0 68px;background:var(--card);display:flex;align-items:center;gap:5px;padding:5px;border-bottom:1px solid #bbb}.hud{flex:1;text-align:center;font-size:10px;font-weight:800}.hud span{display:block;font-size:17px;color:#2f62bf}#wrap{position:relative;flex:1;min-height:0}svg{width:100%;height:100%;display:block;touch-action:none}#hand{fill:#ffffff18;stroke:#2f62bf;stroke-width:6;stroke-linejoin:round;stroke-linecap:round;filter:drop-shadow(0 2px 1px #0001)}.num{font-size:23px;font-weight:850;text-anchor:middle;dominant-baseline:middle;user-select:none}.xline{stroke:#d92c2c;stroke-width:4.5;stroke-linecap:round}#score{height:42px;flex:0 0 42px;background:var(--card);border-top:1px solid #bbb;display:flex;align-items:center;justify-content:center;gap:20px;font-weight:800}.modal{position:fixed;inset:0;background:#0009;display:none;align-items:center;justify-content:center;z-index:20;padding:14px}.modal.show{display:flex}.modalCard{width:min(520px,94vw);max-height:88vh;overflow:auto;background:var(--card);color:var(--text);border-radius:18px;padding:18px;text-align:center}.nums{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.nums button{background:var(--card);color:var(--text);border:1px solid #adb5bf}.toast{position:absolute;left:50%;top:10px;transform:translateX(-50%);padding:8px 12px;border-radius:10px;background:#17212c;color:#fff;opacity:0;transition:.15s;z-index:30;pointer-events:none}.toast.show{opacity:1}#leaders{border:1px solid #ccd2d8;border-radius:10px;overflow:auto;max-height:52vh}.lead{display:grid;grid-template-columns:38px 1fr 62px 70px;gap:5px;padding:8px;border-bottom:1px solid #dde1e5;text-align:left;font-size:13px}#coinModal .modalCard{overflow:visible}
+.coin{width:120px;height:120px;margin:18px auto;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:64px;background:linear-gradient(145deg,#ffd95b,#d99b18);border:7px solid #f5c743;box-shadow:0 10px 25px #0004;font-weight:900;color:#5d3a00}
+.coin.flip{animation:coinflip .22s linear infinite}
+@keyframes coinflip{0%{transform:rotateY(0) scale(1)}50%{transform:rotateY(90deg) scale(.92)}100%{transform:rotateY(180deg) scale(1)}}
+#coinResult{font-size:19px;font-weight:800;min-height:48px}
+
+#aiModal .modalCard{max-width:420px}
+
+#readyModal .modalCard{max-width:470px}
+.readyVs{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;margin:16px 0}
+.readyPlayer{border:1px solid #cbd1d8;border-radius:12px;padding:12px 8px;font-weight:900}
+.readyState{display:block;margin-top:6px;font-size:13px}
+.readyRole{font-size:15px;line-height:1.45;margin:12px 0;padding:12px;border-radius:12px;background:rgba(52,104,197,.08)}
+#readyBtn{width:100%;font-size:20px;padding:15px}
+#readyCountdown{font-size:56px;font-weight:950;color:#2f62bf;display:none;margin-top:12px}
+
+.difficultyBtns{display:grid;gap:10px;margin-top:14px}
+.difficultyBtns button{font-size:18px;padding:14px}
+#hintModal .modalCard{max-width:460px}
+#hintIcon{font-size:54px}
+#hintTitle{font-size:27px;font-weight:950;margin:8px 0}
+#hintText{font-size:16px;line-height:1.45}
+#hintCount{font-size:42px;font-weight:950;color:#2f62bf;margin-top:12px}
+
+
+.accountBar{display:grid;grid-template-columns:1fr 1.35fr 1fr;gap:6px;margin:12px 0}
+.accountStat{border:1px solid #cbd1d8;border-radius:11px;padding:7px 4px;background:#ffffff24;font-size:11px;font-weight:800}
+.accountStat b{display:block;font-size:17px;color:#2f62bf;margin-top:2px}
+.xpTrack{height:7px;background:#d9dee5;border-radius:8px;overflow:hidden;margin:5px 5px 0}
+.xpFill{height:100%;background:#2f62bf;width:0%}
+#exitMatch{background:#b64141;padding:8px 9px;font-size:10px}
+#exitModal .modalCard{max-width:410px}
+.exitActions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px}
+#confirmExit{background:#b64141}
+.rewardBox{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:14px 0}
+.rewardItem{border:1px solid #cbd1d8;border-radius:12px;padding:10px;font-weight:900}
+.rewardItem b{display:block;font-size:24px;color:#2f62bf;margin-top:3px}
+#levelUpText{font-size:19px;font-weight:950;color:#2f62bf;margin:10px 0;display:none}
+
+#turnNotice .modalCard{max-width:460px;padding:28px 20px}
+#turnNoticeIcon{font-size:64px;margin-bottom:8px}
+#turnNoticeTitle{font-size:30px;font-weight:950;line-height:1.1;margin:8px 0}
+#turnNoticeText{font-size:18px;line-height:1.4;margin-top:12px}
+#turnNoticeNumber{font-size:58px;font-weight:950;color:#2f62bf;margin:8px 0}
+@media(max-width:520px){.card{padding:17px}.logo{font-size:42px}.num{font-size:22px}}
+
+.chatFloat{position:absolute;right:12px;bottom:14px;z-index:12;width:48px;height:48px;border-radius:50%;padding:0;font-size:21px;background:#17212cdd;backdrop-filter:blur(8px);box-shadow:0 5px 18px #0004}.chatFeed{position:absolute;left:10px;right:68px;bottom:12px;z-index:11;display:flex;flex-direction:column-reverse;gap:6px;pointer-events:none}.chatBubble{align-self:flex-end;max-width:82%;padding:8px 11px;border-radius:14px;background:#17212caa;color:#fff;backdrop-filter:blur(8px);font-size:13px;font-weight:750;animation:chatLife 3.2s forwards}.chatBubble.opp{align-self:flex-start}.chatName{font-size:10px;opacity:.72;margin-right:5px}@keyframes chatLife{0%{opacity:0;transform:translateY(8px)}10%,75%{opacity:1;transform:none}100%{opacity:0;transform:translateY(-6px)}}
+#chatModal .modalCard{max-width:430px}.quickChat{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:12px 0}.quickChat button{padding:10px 5px;font-size:13px}.chatInputRow{display:grid;grid-template-columns:1fr auto;gap:7px;align-items:center}.chatInputRow input{margin:0}.endActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.endActions .wide{grid-column:1/-1}.streakBadge{font-weight:950;margin:7px 0;color:#d96b00}
+
+/* ===== PALM 50 v0.6 META / SHOP / DAILY ===== */
+.metaGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:10px}.metaBtn{padding:10px 5px;font-size:12px;background:#465264}.metaBtn b{display:block;font-size:20px;margin-bottom:3px}.modalTabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}.modalTabs button{padding:9px 5px;font-size:12px;background:#465264}.modalTabs button.active{background:var(--blue)}
+.profileHero{display:flex;align-items:center;gap:12px;text-align:left;padding:12px;border:1px solid #cbd1d8;border-radius:15px}.profileAvatar{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#2f62bf;color:#fff;font-size:26px;font-weight:950;overflow:hidden}.profileAvatar img{width:100%;height:100%;object-fit:cover}.profileHero h3{margin:0 0 4px}.statsGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:12px 0}.statCard{border:1px solid #cbd1d8;border-radius:12px;padding:10px;font-size:12px}.statCard b{display:block;font-size:22px;color:#2f62bf;margin-top:3px}.sectionTitle{text-align:left;font-weight:950;margin:15px 0 8px}.achievement{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px;border:1px solid #d3d8de;border-radius:11px;margin:6px 0;text-align:left}.achievement.locked{opacity:.45}.achievement span:last-child{font-size:21px}.dailyDay{display:grid;grid-template-columns:40px 1fr auto;align-items:center;gap:8px;border:1px solid #d3d8de;border-radius:11px;padding:9px;margin:6px 0;text-align:left}.dailyDay.claimed{opacity:.55}.dailyDay.current{border:2px solid var(--blue)}.task{padding:10px;border:1px solid #d3d8de;border-radius:11px;margin:7px 0;text-align:left}.taskTop{display:flex;justify-content:space-between;gap:8px;font-weight:900}.taskBar{height:7px;border-radius:8px;overflow:hidden;background:#dce1e7;margin-top:7px}.taskFill{height:100%;background:#2f62bf}.shopBalance{display:flex;justify-content:space-between;gap:8px;padding:10px;border-radius:12px;background:rgba(52,104,197,.09);font-weight:900}.shopGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.shopItem{border:1px solid #d3d8de;border-radius:13px;padding:11px;text-align:center}.shopIcon{font-size:35px}.shopItem h4{margin:6px 0 3px}.shopItem p{font-size:11px;opacity:.65;min-height:26px}.shopItem button{width:100%;padding:9px 5px;font-size:12px}.owned{background:#3f8356!important}.premiumCard{border:2px solid #e2b52f;border-radius:17px;padding:14px;background:linear-gradient(145deg,#fff8d6,#fff);color:#251f10}.premiumCard h2{margin:0}.premiumPerks{text-align:left;line-height:1.8;margin:10px 0}.streakPill{display:inline-block;padding:4px 8px;border-radius:999px;background:#fff1d6;font-size:11px;font-weight:900;color:#5c4000}.navLeader{display:flex;gap:6px;margin:10px 0}.navLeader button{flex:1;padding:8px 4px;font-size:11px}.miniNote{font-size:11px;opacity:.65;line-height:1.35}.equipRow{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}.equipTag{padding:5px 8px;border-radius:999px;border:1px solid #cbd1d8;font-size:11px}
+@media(max-width:420px){.metaGrid{grid-template-columns:repeat(2,1fr)}.shopGrid{grid-template-columns:1fr}.statsGrid{grid-template-columns:repeat(2,1fr)}}
+
+
+/* ===== v0.6.2 COMPACT MOBILE MENU ===== */
+#menu.center{align-items:flex-start;justify-content:center;padding:8px 10px 10px;overflow:hidden}
+#menu .card{width:min(500px,96vw);max-height:calc(var(--h) - 16px);padding:12px 14px 10px;border-radius:18px;overflow:hidden;display:flex;flex-direction:column}
+#menu .logo{font-size:38px;line-height:1;margin:2px 0 7px;flex:0 0 auto}
+#menu .tgProfile{margin:0 auto 6px;gap:7px;flex:0 0 auto}
+#menu .tgAvatar,#menu .tgAvatarFallback{width:32px;height:32px;font-size:13px}
+#menu .tgIdentity b{font-size:13px}#menu .tgIdentity span{font-size:9px}
+#menu .menuRule{font-size:10px;line-height:1.25;opacity:.66;margin:0 0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#menu .accountBar{grid-template-columns:.75fr 1.6fr 1fr;gap:5px;margin:4px 0 7px;flex:0 0 auto}
+#menu .accountStat{padding:5px 3px;font-size:9px;border-radius:9px}
+#menu .accountStat b{font-size:14px;margin-top:1px}
+#menu .xpTrack{height:5px;margin-top:3px}
+#menu #nick{height:34px;padding:7px 10px;margin:0 0 6px;font-size:12px;border-width:1px}
+#menu .playStack{display:grid;gap:7px;margin:0;flex:0 0 auto}
+#menu .primaryPlay{font-size:17px;padding:13px 10px;border-radius:13px;box-shadow:0 5px 12px #3468c533}
+#menu .secondaryPlay{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+#menu .secondaryPlay button{padding:10px 6px;font-size:12px}
+#menu .joinCompact{display:grid;grid-template-columns:1fr auto;gap:6px;margin-top:0}
+#menu .joinCompact input{margin:0;height:34px;padding:7px 9px;font-size:12px}
+#menu .joinCompact button{padding:8px 10px;font-size:11px}
+#menu .bottomNav{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:7px;padding-top:7px;border-top:1px solid #ccd2d877;flex:0 0 auto}
+#menu .bottomNav button{background:transparent;color:var(--text);padding:4px 1px 2px;font-size:8px;border-radius:9px;min-width:0}
+#menu .bottomNav button b{display:block;font-size:18px;line-height:1.05;margin-bottom:2px}
+#menu .bottomNav button:active{background:#3468c51a}
+#menu #warn{font-size:9px!important;margin-top:4px!important;min-height:10px;line-height:1.1}
+@media(max-height:720px){#menu .menuRule{display:none}#menu .logo{font-size:34px;margin-bottom:4px}#menu .tgProfile{margin-bottom:4px}#menu .accountBar{margin:2px 0 5px}#menu #nick{height:30px;margin-bottom:5px}#menu .primaryPlay{padding:11px 8px}#menu .secondaryPlay button{padding:8px 5px}#menu .bottomNav{margin-top:5px;padding-top:5px}}
+@media(max-height:640px){#menu .tgProfile{display:none!important}#menu .logo{font-size:32px}#menu #nick{display:none}#menu .accountStat{padding:3px 2px}#menu .primaryPlay{padding:9px 7px;font-size:15px}#menu .secondaryPlay button{padding:7px 4px}#menu .joinCompact input{height:30px}#menu .bottomNav button b{font-size:16px}}
+
+
+/* v0.7 compact shop + AI banter */
+.shopGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.shopItem{border:1px solid #ccd2d8;border-radius:14px;padding:10px;background:var(--card);text-align:center}.shopItem h4{margin:6px 0 4px;font-size:15px}.shopItem p{margin:0 0 8px;font-size:12px;opacity:.7}.shopItem button{width:100%;padding:10px 8px}.shopEmoji{font-size:42px;line-height:1.1}.payNote{font-size:12px;opacity:.7;line-height:1.4}.aiBubble{position:absolute;left:12px;right:12px;bottom:62px;z-index:18;display:flex;justify-content:center;pointer-events:none}.aiBubble span{max-width:min(86vw,430px);background:rgba(23,33,44,.76);backdrop-filter:blur(8px);color:#fff;border:1px solid #ffffff26;border-radius:16px;padding:9px 12px;font-weight:800;box-shadow:0 8px 24px #0003;animation:aiPop .18s ease-out}.aiBubble.hide{display:none}@keyframes aiPop{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+@media(max-width:420px){.shopGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px}.shopItem{padding:7px}.shopEmoji,.shopIcon{font-size:32px}.shopItem h4{font-size:13px}.shopItem p{font-size:10px;min-height:24px}.shopItem button{font-size:11px;padding:8px 4px}}
+.payState{margin-top:8px;padding:9px;border-radius:11px;background:rgba(52,104,197,.09);font-size:12px;font-weight:800}.payState.ok{background:rgba(49,145,79,.12)}.payState.err{background:rgba(190,55,55,.12)}
+
+
+/* ===== PALM 50 RELEASE UI ===== */
+:root{--gold:#ffb800;--gold2:#ffd74c;--ink:#111827;--soft:#f6f7fb;--line:#dce2ea;--green:#50b548;--danger:#e64035}
+#menu.paper{background-color:#f8fafc;background-size:24px 24px;overflow:hidden;padding:0!important;align-items:stretch!important}
+#menu .card.releaseHome{width:100%;height:100%;max-width:540px;max-height:none;margin:0 auto;padding:10px 12px 72px!important;border-radius:0!important;background:rgba(255,255,255,.86);box-shadow:none;overflow:auto;display:block;text-align:left;backdrop-filter:blur(3px)}
+.homeTop{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;min-height:56px}
+.homeProfile{display:flex;gap:9px;align-items:center;min-width:0}.homeProfile #tgProfile{display:flex!important;margin:0;justify-content:flex-start}.homeProfile .tgAvatar,.homeProfile .tgAvatarFallback{width:46px!important;height:46px!important;font-size:18px!important;border:3px solid #fff;box-shadow:0 0 0 2px #1769e8,0 4px 12px #0002}.homeProfile .tgIdentity b{font-size:16px}.homeProfile .tgIdentity span{display:none}.homeLvl{font-size:12px;font-weight:950;color:#1769e8;margin-top:2px}.homeXp{width:120px;max-width:32vw;height:7px;background:#1f2937;border-radius:99px;overflow:hidden;margin-top:4px}.homeXp>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#1667ef,#61a4ff);border-radius:inherit}
+.currencyStack{display:grid;gap:4px}.currencyPill{display:flex;align-items:center;gap:6px;justify-content:flex-end;font-size:16px;font-weight:950;white-space:nowrap}.currencyPlus{width:24px;height:24px;border-radius:50%;padding:0;background:linear-gradient(#ffd64c,#ffad00);color:#352000;border:1px solid #ef9f00;font-size:18px;line-height:1;box-shadow:0 2px 5px #0002}.starLabel{font-size:12px;font-weight:850;opacity:.7}
+.releaseLogo{text-align:center;margin:3px 0 7px;line-height:.76;font-weight:1000;letter-spacing:-4px;text-shadow:0 5px 0 #fff,0 9px 12px #0002}.releaseLogo .palm{font-size:58px;color:#fff;-webkit-text-stroke:4px #1459d9;paint-order:stroke fill}.releaseLogo .fifty{display:block;font-size:66px;color:#fff;-webkit-text-stroke:5px #e32626;paint-order:stroke fill;margin-top:8px}
+.releasePrimary{width:100%;min-height:76px;border-radius:18px;background:linear-gradient(180deg,#ffd63f,#ffa408);color:#171717;border:1px solid #ed9900;box-shadow:0 5px 0 #c67800,0 9px 18px #f3a00030;display:flex;align-items:center;justify-content:center;gap:13px;font-size:19px;font-weight:1000;text-align:left}.releasePrimary .bolt{font-size:39px}.releasePrimary small{display:block;font-size:12px;font-weight:750;margin-top:3px;opacity:.7}
+.homeDuo{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.homeDuo button{height:63px;border-radius:16px;box-shadow:0 4px 0 rgba(0,0,0,.18);font-size:15px}.friendBlue{background:linear-gradient(#4f9bf8,#1768d8)!important}.aiGreen{background:linear-gradient(#77d56d,#3d9c38)!important}
+.codeBar{display:grid;grid-template-columns:1fr auto;gap:7px;margin-top:12px}.codeBar input{height:44px;margin:0;border:1px solid #ced6df;background:#fff;text-align:center;font-weight:850;letter-spacing:1px}.codeBar button{height:44px;background:#fff;color:#1d2630;border:1px solid #ced6df;box-shadow:0 3px 7px #0001}
+.homeCards{display:grid;gap:9px;margin-top:11px}.homeInfoCard{display:grid;grid-template-columns:48px 1fr auto;align-items:center;gap:8px;min-height:62px;padding:8px 10px;background:#fff;border:1px solid #d8dee7;border-radius:14px;box-shadow:0 3px 10px #0000000d}.homeInfoIcon{font-size:34px;position:relative}.badgeDot{position:absolute;right:-6px;top:-6px;min-width:19px;height:19px;padding:0 5px;border-radius:99px;background:#e6332a;color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:950;border:2px solid #fff}.homeInfoCard b{font-size:14px}.homeInfoCard small{display:block;font-size:11px;opacity:.65;margin-top:2px}.claimMini{background:linear-gradient(#6fd35f,#3ca53b);padding:8px 12px;border-radius:12px;font-size:11px}.taskMiniBar{height:5px;background:#d8dee7;border-radius:99px;overflow:hidden;margin-top:5px}.taskMiniBar i{display:block;height:100%;width:0;background:#2b77ef}
+.releaseBottomNav{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:min(540px,100%);height:64px;display:grid;grid-template-columns:repeat(5,1fr);background:rgba(255,255,255,.96);border-top:1px solid #d9dfe6;padding:4px 5px calc(4px + env(safe-area-inset-bottom));z-index:14;box-shadow:0 -6px 18px #0000000d}.releaseBottomNav button{background:transparent;color:#252a31;padding:3px 1px;border-radius:12px;font-size:9px}.releaseBottomNav button b{display:block;font-size:22px;line-height:1.05}.releaseBottomNav button.homeActive{background:#eef4ff;color:#1769e8}
+#menu #nick{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}.helpBubble{position:absolute;right:14px;top:79px;width:34px;height:34px;border-radius:50%;padding:0;background:#fff;color:#1769e8;border:1px solid #d5dce6;box-shadow:0 3px 10px #0001;font-size:19px}
+
+/* Shop release look */
+#shopModal{padding:0;background:rgba(0,0,0,.36)}#shopModal .modalCard{width:min(540px,100vw);height:min(94vh,900px);max-height:94vh;border-radius:24px 24px 0 0;margin-top:auto;padding:0;background:#f7f8fb;overflow:hidden;text-align:left;display:flex;flex-direction:column}.shopHeader{display:grid;grid-template-columns:42px 1fr auto;align-items:center;padding:13px 14px 8px;background:#fff;border-bottom:1px solid #e1e5eb}.shopHeader h2{margin:0;text-align:center;font-size:25px}.shopCloseIcon{width:36px;height:36px;border-radius:50%;padding:0;background:#eef1f5;color:#1c232b;font-size:19px}.shopMoney{font-size:13px;font-weight:950;line-height:1.55;text-align:right}.shopBody{padding:9px 10px 20px;overflow:auto}.shopBalance{display:none!important}.modalTabs.releaseTabs{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:2px 0 10px}.modalTabs.releaseTabs button{background:#fff;color:#20252c;border:1px solid #d2d8e0;border-radius:13px;padding:10px 4px;font-size:12px}.modalTabs.releaseTabs button.active{background:#1769e8;color:#fff;border-color:#1769e8;box-shadow:0 3px 8px #1769e833}
+#shopGrid.shopGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;margin:0}.shopItem.releaseItem{padding:0!important;overflow:hidden;border-radius:17px;background:#fff;box-shadow:0 3px 11px #00000012;border:1px solid #dce1e7}.shopVisual{height:142px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(145deg,#f8fafc,#e8edf4)}.shopVisual svg{width:88%;height:88%}.shopText{padding:8px 9px 10px;text-align:center}.shopText h4{margin:0 0 2px!important;font-size:14px!important}.shopText p{min-height:0!important;margin:0 0 7px!important;font-size:10px!important}.shopItem.releaseItem button{border-radius:11px;background:#eef1f5;color:#1c2630;font-size:12px;padding:8px 4px}.shopItem.releaseItem button:not(.owned):not(:disabled)[data-star="1"]{background:#1769e8;color:#fff}.shopItem.releaseItem button.owned{background:#50b548!important;color:#fff}.skinCheck{position:absolute;left:8px;top:8px;width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#4fbd4c;color:#fff;font-weight:950;border:2px solid #fff;z-index:2}.vipFlag{position:absolute;right:7px;top:7px;border-radius:99px;padding:4px 7px;background:#ffcf28;color:#4a3500;font-size:9px;font-weight:1000;border:1px solid #ecaa00;z-index:2}.preview-classic_hand{background:linear-gradient(135deg,#f8fafc,#e8eef5)}.preview-fire_hand{background:radial-gradient(circle at 50% 70%,#ff8737 0,#55160b 42%,#160705 80%)}.preview-galaxy_hand{background:radial-gradient(circle at 50% 55%,#7746ff,#251257 42%,#09041d 82%)}.preview-royal_hand{background:radial-gradient(circle at 50% 55%,#ffe99c,#d99713 45%,#5e3000 90%)}.preview-neon_x{background:radial-gradient(circle,#273379,#0c102d)}.preview-fire_x{background:radial-gradient(circle,#8d2413,#230604)}.preview-basic_reactions,.preview-meme_reactions,.preview-vip_reactions{font-size:42px;gap:6px;flex-wrap:wrap;padding:18px}.preview-meme_reactions{background:linear-gradient(135deg,#10284e,#0e172a)}.preview-vip_reactions{background:linear-gradient(135deg,#5c3500,#16100a)}.framePreview{width:84px;height:84px;border-radius:50%;background:#dbe4ef;display:flex;align-items:center;justify-content:center;font-size:38px;border:7px solid #e7edf5;box-shadow:0 5px 15px #0002}.frame_blue{border-color:#1769e8}.frame_fire{border-color:#f0522d;box-shadow:0 0 16px #f0522d99}.frame_gold{border-color:#f3b51c;box-shadow:0 0 18px #f3b51c99}.frame_galaxy{border-color:#7549ea;box-shadow:0 0 18px #7549eaaa}.premiumCard.releasePremium{margin:12px 0 2px!important;border-radius:18px;padding:12px;background:linear-gradient(135deg,#fff4b8,#fff,#ece8ff);border:1px solid #e2c75d}.premiumCard.releasePremium .premiumPerks{font-size:12px;line-height:1.55}.premiumCard.releasePremium button{width:100%;background:linear-gradient(#ffd34a,#f1a900);color:#2d2100}
+
+/* live cosmetic skins */
+#hand{transition:stroke .2s,fill .2s,filter .2s}.hand-fire{stroke:#ff6a2a!important;fill:url(#handFire)!important;filter:url(#glowFire)!important}.hand-galaxy{stroke:#9c75ff!important;fill:url(#handGalaxy)!important;filter:url(#glowGalaxy)!important}.hand-royal{stroke:#ffc62e!important;fill:url(#handRoyal)!important;filter:url(#glowGold)!important}.hand-classic{fill:rgba(255,255,255,.12)!important}.x-neon{filter:drop-shadow(0 0 3px #845dff) drop-shadow(0 0 6px #845dff)}.x-fire{filter:drop-shadow(0 0 3px #ff5b2e) drop-shadow(0 0 6px #ff8b2e)}
+#tgAvatarWrap.frame_blue,.profileAvatar.frame_blue{border-radius:50%;box-shadow:0 0 0 3px #1769e8,0 4px 12px #0002}#tgAvatarWrap.frame_fire,.profileAvatar.frame_fire{border-radius:50%;box-shadow:0 0 0 3px #ef5531,0 0 12px #ef553188}#tgAvatarWrap.frame_gold,.profileAvatar.frame_gold{border-radius:50%;box-shadow:0 0 0 3px #f0b324,0 0 14px #f0b32499}#tgAvatarWrap.frame_galaxy,.profileAvatar.frame_galaxy{border-radius:50%;box-shadow:0 0 0 3px #744ee8,0 0 14px #744ee899}
+@media(max-height:720px){.releaseLogo{margin:0 0 5px}.releaseLogo .palm{font-size:48px}.releaseLogo .fifty{font-size:54px}.releasePrimary{min-height:64px}.homeDuo button{height:55px}.homeInfoCard{min-height:54px}.homeCards{gap:7px}.releaseBottomNav{height:58px}.releaseBottomNav button b{font-size:19px}}
+@media(max-width:380px){.releaseLogo .palm{font-size:48px}.releaseLogo .fifty{font-size:55px}.homeDuo{gap:7px}.homeDuo button{font-size:13px}.currencyPill{font-size:14px}.shopVisual{height:120px}}
+
+
+/* ===== RC4 full-sheet cross field + combo bonus ===== */
+#crossZone{fill:none;stroke:#6f88a8;stroke-width:2;stroke-dasharray:10 8;opacity:.26;pointer-events:none}
+#crossZoneLabel{display:none}
+.comboFlash{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%) scale(.8);z-index:18;pointer-events:none;opacity:0;background:linear-gradient(135deg,#ffe55a,#ff9d00);color:#231500;border:3px solid #fff;border-radius:22px;padding:14px 20px;font-size:26px;font-weight:950;box-shadow:0 12px 35px #0005;transition:.18s}
+.comboFlash.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+#score .scoreSide{min-width:112px;text-align:center}
+#score .scoreSide small{display:block;font-size:9px;opacity:.65;font-weight:800;margin-top:1px}
+@media(max-width:380px){#score{gap:10px}.scoreSide{min-width:98px!important}}
+
+/* ===== RC5 HOME LABEL VISIBILITY PATCH ===== */
+.currencyStack{min-width:150px}
+.currencyPill{background:#fff;border:1px solid #d8dee7;border-radius:999px;padding:4px 5px 4px 8px;box-shadow:0 2px 7px #0000000d}
+.currencyName{font-size:10px;font-weight:1000;letter-spacing:.2px;color:#26313d}
+#accountCoins{min-width:22px;text-align:center;color:#111827}
+.homeCardTitle{font-size:14px!important;font-weight:1000!important;color:#20252c}
+#tasksCard{border:2px solid #e2e7ed}
+#tasksCard .homeInfoIcon{font-size:36px}
+@media(max-width:380px){
+  .currencyStack{min-width:132px}
+  .currencyName{font-size:9px}
+  .currencyPill{font-size:13px;gap:4px;padding-left:6px}
+}
+
+</style></head><body><!-- PALM 50 RC4 / full-sheet crosses + speed coins + diagonal x2 combo --><div id="app">
+<section id="menu" class="screen active paper center"><div class="card releaseHome">
+<div class="homeTop">
+  <div class="homeProfile"><div id="tgProfile" class="tgProfile"><div id="tgAvatarWrap"></div><div class="tgIdentity"><b id="tgDisplayName">Игрок</b><span id="tgUsername"></span><div class="homeLvl">LVL <span id="accountLevel">1</span></div><div class="homeXp"><i id="homeXpFill"></i></div></div></div></div>
+  <div class="currencyStack"><div class="currencyPill"><span class="currencyName">🪙 МОНЕТЫ</span><span id="accountCoins">0</span><button id="coinsPlus" class="currencyPlus">+</button></div><div class="currencyPill"><span class="currencyName">⭐ ЗВЁЗДЫ</span><span class="starLabel">STARS</span><button id="starsPlus" class="currencyPlus">+</button></div></div>
+</div>
+<div class="releaseLogo"><span class="palm">PALM</span><span class="fifty">50</span></div>
+<input id="nick" maxlength="20" placeholder="Твой никнейм"><span id="accountXp" style="display:none">0 / 100</span><div id="accountXpFill" style="display:none"></div>
+<button id="helpBtn" class="helpBubble">?</button>
+<button id="random" class="releasePrimary"><span class="bolt">⚡</span><span>НАЙТИ СОПЕРНИКА<small>Онлайн-дуэль</small></span></button>
+<div class="homeDuo"><button id="friend" class="friendBlue">👥 С ДРУГОМ<br><small>Код комнаты</small></button><button id="aiGame" class="aiGreen">🤖 AI ПРОТИВНИК<br><small>Тренировка</small></button></div>
+<div class="codeBar"><input id="joinCode" maxlength="6" placeholder="🔑 КОД КОМНАТЫ"><button id="join">ВОЙТИ</button></div>
+<div class="homeCards">
+ <div class="homeInfoCard" id="dailyCard"><div class="homeInfoIcon">🎁<span id="dailyBadge" class="badgeDot">1</span></div><div><b>ЕЖЕДНЕВНАЯ НАГРАДА</b><small id="dailyHomeText">Забери монеты за вход</small></div><button id="dailyBtn" class="claimMini">ПОЛУЧИТЬ</button></div>
+ <div class="homeInfoCard" id="tasksCard"><div class="homeInfoIcon">🎯<span id="taskBadge" class="badgeDot">3</span></div><div><b class="homeCardTitle">🎯 ЗАДАНИЯ ДНЯ</b><small id="taskHomeText">0 / 3 выполнено</small><div class="taskMiniBar"><i id="taskHomeFill"></i></div></div><button id="tasksBtn" style="background:transparent;color:#333;padding:8px;font-size:22px">›</button></div>
+</div>
+<div id="warn" class="muted" style="text-align:center;margin-top:7px"></div>
+</div>
+<div class="releaseBottomNav"><button id="profileBtn"><b>👤</b>Профиль</button><button id="dailyNav"><b>🎁</b>Награда</button><button class="homeActive"><b>🏠</b>Главная</button><button id="leader"><b>🏆</b>Лидеры</button><button id="shopBtn"><b>🛒</b>Магазин</button></div></section>
+<section id="lobby" class="screen paper center"><div class="card"><h2 id="lobbyTitle">Комната</h2><div class="code" id="roomCode">------</div><div class="muted" id="lobbyStatus">Ожидаем соперника...</div><div id="players"></div><div class="stack"><button id="invite">📨 ПРИГЛАСИТЬ ДРУГА</button><button id="cancelSearch" class="alt" style="display:none;background:#c62828;color:#fff;border-color:#9f1f1f;font-weight:900">✖ ОТМЕНИТЬ ПОИСК</button><button id="copy" class="alt">📋 КОПИРОВАТЬ КОД</button><button id="leave" class="alt">← В МЕНЮ</button></div></div></section>
+<section id="game" class="screen"><header><div class="hud">ЦЕЛЬ<span id="target">—</span></div><div class="hud">ХОД<span id="turn">—</span></div><div class="hud">ОСТАЛОСЬ<span id="left">50</span></div><button id="sound" class="alt" style="padding:8px">🔊</button><button id="exitMatch">ВЫЙТИ</button></header><div id="wrap"><svg id="svg" viewBox="0 0 700 900" preserveAspectRatio="xMidYMid meet"><defs><pattern id="g" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0L0 0 0 28" fill="none" stroke="#bfd0e5" stroke-width="1"/></pattern><linearGradient id="handFire" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff3d00" stop-opacity=".08"/><stop offset=".55" stop-color="#ff8b22" stop-opacity=".18"/><stop offset="1" stop-color="#ffd05a" stop-opacity=".08"/></linearGradient><radialGradient id="handGalaxy"><stop offset="0" stop-color="#a475ff" stop-opacity=".22"/><stop offset=".55" stop-color="#6425d0" stop-opacity=".13"/><stop offset="1" stop-color="#11092b" stop-opacity=".05"/></radialGradient><linearGradient id="handRoyal"><stop offset="0" stop-color="#fff1a6" stop-opacity=".24"/><stop offset="1" stop-color="#d89800" stop-opacity=".12"/></linearGradient><filter id="glowFire"><feGaussianBlur stdDeviation="2.3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><filter id="glowGalaxy"><feGaussianBlur stdDeviation="2.6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><filter id="glowGold"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="700" height="900" fill="#fbfbf8"/><rect width="700" height="900" fill="url(#g)"/><rect id="crossZone" x="1" y="1" width="698" height="894"/><text id="crossZoneLabel" x="12" y="24">ПОЛЕ КРЕСТИКОВ</text><polygon id="hand" points="245,855 240,800 220,748 188,705 150,663 111,620 76,576 51,535 35,496 33,458 44,426 66,406 94,401 122,410 153,431 190,461 220,478 235,470 239,443 230,397 217,337 205,273 201,215 204,166 217,130 237,112 256,118 270,141 276,179 279,232 282,303 289,363 303,390 316,386 321,358 321,286 320,205 322,136 330,82 344,49 361,39 378,48 390,75 395,118 396,177 395,250 395,326 402,373 414,391 427,382 436,346 444,289 452,224 462,165 474,126 491,108 510,111 526,130 534,160 534,196 527,241 519,288 509,341 502,385 504,415 517,429 532,420 548,389 565,351 582,316 602,288 622,276 642,282 657,300 663,326 658,356 645,388 628,424 610,462 591,506 573,558 558,616 546,674 532,730 511,784 493,825 487,855"/><g id="xlayer"></g><g id="nlayer"></g></svg><div id="toast" class="toast"></div><div id="comboFlash" class="comboFlash">⚡ ×2 COMBO!</div><div id="aiBubble" class="aiBubble hide"><span id="aiBubbleText"></span></div><div id="chatFeed" class="chatFeed"></div><button id="chatBtn" class="chatFloat" aria-label="Чат">💬</button>
+<div id="readyModal" class="modal"><div class="modalCard">
+  <h2>ГОТОВ?</h2>
+  <div id="readyRole" class="readyRole"></div>
+  <div class="readyVs">
+    <div class="readyPlayer"><span id="readyMeName">Ты</span><span class="readyState" id="readyMeState">⏳ не готов</span></div>
+    <b>VS</b>
+    <div class="readyPlayer"><span id="readyOppName">Соперник</span><span class="readyState" id="readyOppState">⏳ не готов</span></div>
+  </div>
+  <button id="readyBtn">✅ ГОТОВ?</button>
+  <div id="readyWait" class="muted" style="margin-top:10px">Игра начнётся, когда будут готовы оба.</div>
+  <div id="readyCountdown">3</div>
+</div></div>
+<div id="hintModal" class="modal"><div class="modalCard">
+<div id="hintIcon">🪙</div>
+<div id="hintTitle">Готовься</div>
+<div id="hintText"></div>
+<div id="hintCount">3</div>
+</div></div>
+<div id="turnNotice" class="modal"><div class="modalCard">
+<div id="turnNoticeIcon">✅</div>
+<div id="turnNoticeTitle">ЧИСЛО НАЙДЕНО</div>
+<div id="turnNoticeNumber"></div>
+<div id="turnNoticeText"></div>
+</div></div>
+<div id="coinModal" class="modal"><div class="modalCard"><h2>🪙 Жеребьёвка</h2><div id="coin" class="coin">?</div><div id="coinResult">Подбрасываем монету...</div></div></div><div id="picker" class="modal"><div class="modalCard"><h3>Загадай число сопернику</h3><div id="pickGrid" class="nums"></div></div></div><div id="end" class="modal"><div class="modalCard"><h2 id="endTitle"></h2><p id="endText"></p>
+<div id="levelUpText">🎉 НОВЫЙ УРОВЕНЬ!</div>
+<div class="rewardBox"><div class="rewardItem">EXP<b id="rewardXp">+0</b></div><div class="rewardItem">🪙 МОНЕТЫ<b id="rewardCoins">+0</b></div></div>
+<div id="accountAfter" class="muted"></div>
+<div id="streakText" class="streakBadge"></div><div class="endActions"><button id="rematch">🔄 РЕВАНШ</button><button id="challenge" class="alt">⚔️ ВЫЗВАТЬ ДРУГА</button><button id="endMenu" class="alt wide">🏠 В МЕНЮ</button></div></div></div></div><div id="score"><span class="scoreSide" style="color:#d92c2c"><span id="myName">Я</span>: <b id="myScore">0</b><small id="myCellsLeft">клеток: —</small></span><span class="scoreSide"><span id="oppName">Соперник</span>: <b id="oppScore">0</b><small id="oppCellsLeft">клеток: —</small></span></div></section>
+
+<!-- Global menu modals: visible from any screen -->
+<div id="exitModal" class="modal"><div class="modalCard">
+<h2>Покинуть матч?</h2>
+<p id="exitText">Если выйти из PvP, сопернику будет засчитана победа.</p>
+<div class="exitActions"><button id="cancelExit" class="alt">ОСТАТЬСЯ</button><button id="confirmExit">ВЫЙТИ</button></div>
+</div></div>
+
+<div id="aiModal" class="modal"><div class="modalCard">
+<h2>🤖 Игра с AI</h2>
+<p>Выбери сложность соперника:</p>
+<div class="difficultyBtns">
+<button data-ai="easy">🙂 ЛЕГКО</button>
+<button data-ai="medium">😎 СРЕДНЕ</button>
+<button data-ai="hard">🔥 СЛОЖНО</button>
+</div>
+<button id="closeAi" class="alt" style="margin-top:12px">НАЗАД</button>
+</div></div>
+
+
+<div id="chatModal" class="modal"><div class="modalCard"><h2>💬 Быстрый чат</h2><div class="quickChat" id="quickChat"><button>👋 Удачи!</button><button>🔥 Хорош!</button><button>😈 Не найдёшь!</button><button>😂 Ха-ха!</button><button>👏 Красиво!</button><button>⚔️ Реванш?</button></div><div class="chatInputRow"><input id="chatInput" maxlength="60" placeholder="Сообщение..."><button id="chatSend">➤</button></div><button id="chatClose" class="alt" style="margin-top:10px">ЗАКРЫТЬ</button></div></div>
+<div id="leadModal" class="modal"><div class="modalCard"><h2>🏆 Лидеры</h2><div id="leadStatus" class="muted">Загрузка...</div><div id="leaders"></div><button id="closeLead" class="alt" style="margin-top:10px">ЗАКРЫТЬ</button></div></div>
+
+<div id="profileModal" class="modal"><div class="modalCard"><h2>👤 Профиль</h2><div id="profileHero" class="profileHero"></div><div id="profileStats" class="statsGrid"></div><div class="sectionTitle">🏅 Достижения</div><div id="achievementList"></div><button id="closeProfile" class="alt" style="margin-top:10px">ЗАКРЫТЬ</button></div></div>
+<div id="dailyModal" class="modal"><div class="modalCard"><h2>🎁 Ежедневная награда</h2><p class="muted">Заходи каждый день и забирай монеты. Серия сбрасывается, если пропустить больше суток.</p><div id="dailyList"></div><button id="claimDaily">🎁 ЗАБРАТЬ</button><button id="closeDaily" class="alt" style="margin-top:8px">ЗАКРЫТЬ</button></div></div>
+<div id="tasksModal" class="modal"><div class="modalCard"><h2>🎯 ЗАДАНИЯ ДНЯ</h2><div id="taskList"></div><p class="miniNote">Прогресс заданий считается на этом устройстве и обновляется после матчей.</p><button id="closeTasks" class="alt" style="margin-top:10px">ЗАКРЫТЬ</button></div></div>
+<div id="shopModal" class="modal"><div class="modalCard"><div class="shopHeader"><button id="closeShop" class="shopCloseIcon">←</button><h2>МАГАЗИН</h2><div class="shopMoney">🪙 <span id="shopCoinsTop">0</span><br>⭐ Stars</div></div><div class="shopBody"><div id="shopBalance" class="shopBalance"></div><div class="modalTabs releaseTabs"><button class="shopTab active" data-shop="skins">Ладони</button><button class="shopTab" data-shop="crosses">Крестики</button><button class="shopTab" data-shop="reactions">Реакции</button><button class="shopTab" data-shop="frames">Рамки</button></div><div id="shopGrid" class="shopGrid"></div><div class="premiumCard releasePremium"><h2>👑 PALM PLUS</h2><div class="premiumPerks">✓ VIP badge и реакции &nbsp; ✓ Royal cosmetics<br>✓ Бонусные Coins &nbsp; ✓ Без рекламных пауз</div><button id="premiumBtn">⭐ 199 Stars / 30 дней</button><div id="payState" class="payState" style="display:none"></div></div></div></div></div>
+</div><script>
+const SUPABASE_URL='https://qemfmqpyxahisjbuzaki.supabase.co',SUPABASE_ANON_KEY='sb_publishable_y-01KsmHlM0WUiEzcDmOTw_v-hX_1d0',GAME_URL=location.origin+'/';let TELEGRAM_BOT_USERNAME='';
+const PAYMENT_API='/api/create-stars-invoice',PAYMENT_STATUS_API='/api/payment-status',ENTITLEMENTS_API='/api/entitlements';
+
+const $=x=>document.getElementById(x),TG=window.Telegram?.WebApp||null;
+async function loadPublicConfig(){try{const r=await fetch('/api/public-config',{cache:'no-store'});const d=await r.json();if(d?.botUsername)TELEGRAM_BOT_USERNAME=d.botUsername}catch(e){}}
+let sb=null,ch=null,me=null,match=null,players=[],myP=null,opp=null,layout=[],used=new Set(),target=null,searcher=null,chooser=null,crosses=new Set(),soundOn=true,audio=null,gameStarted=false,coinRunning=false;
+let lobbyPoll=null,turnPoll=null,gameMode='pvp',aiDifficulty='medium',aiCrosses=new Set(),aiFindTimer=null,aiCrossTimer=null,hintRunning=false;
+let coinDone=false,readyIds=new Set(),readyPoll=null,countdownRunning=false;
+let turnNoticeBusy=false;
+let aiTargetAt=0;
+let aiChatTimer=null,aiLastChatAt=0;
+let matchmakingBusy=false, matchmakingToken=0, searchingRandom=false, matchmakingPoll=null, joiningBusy=false;
+
+let profile={level:1,xp:0,coins:0,games:0,wins:0,streak:0,bestStreak:0};
+let rewardGrantedForCurrentGame=false;
+
+
+
+
+function xpNeeded(level){return 100+(level-1)*50}
+
+function loadProfile(){
+ try{
+  const raw=localStorage.getItem('palm50_profile_v1');
+  if(raw)profile={...profile,...JSON.parse(raw)};
+ }catch(e){}
+ normalizeProfileLevel();
+ renderProfile();
+}
+function normalizeProfileLevel(){
+ let need=xpNeeded(profile.level);
+ while(profile.xp>=need){profile.xp-=need;profile.level++;need=xpNeeded(profile.level)}
+}
+function saveProfile(){
+ try{localStorage.setItem('palm50_profile_v1',JSON.stringify(profile))}catch(e){}
+ renderProfile();
+}
+function renderProfile(){
+ const need=xpNeeded(profile.level);
+ if($('accountLevel'))$('accountLevel').textContent=profile.level;
+ if($('accountXp'))$('accountXp').textContent=profile.xp+' / '+need;
+ if($('accountCoins'))$('accountCoins').textContent=profile.coins;
+ if($('accountXpFill'))$('accountXpFill').style.width=Math.min(100,profile.xp/need*100)+'%';
+ if($('homeXpFill'))$('homeXpFill').style.width=Math.min(100,profile.xp/need*100)+'%';
+ setTimeout(updateHomeMeta,0);
+}
+function grantRewards(won,mode){
+ if(rewardGrantedForCurrentGame)return {xp:0,coins:0,leveled:false};
+ rewardGrantedForCurrentGame=true;
+ let xp=mode==='pvp'?25:15;
+ let coins=mode==='pvp'?10:6;
+ if(won){xp+=mode==='pvp'?50:35;coins+=mode==='pvp'?30:20}
+ const before=profile.level;
+ profile.xp+=xp;profile.coins+=coins;profile.games++;
+ if(won){profile.wins++;profile.streak=(profile.streak||0)+1;profile.bestStreak=Math.max(profile.bestStreak||0,profile.streak)}else profile.streak=0;
+ normalizeProfileLevel();saveProfile();
+ return {xp,coins,leveled:profile.level>before};
+}
+function showRewards(r){
+ $('rewardXp').textContent='+'+r.xp;
+ $('rewardCoins').textContent='+'+r.coins;
+ $('levelUpText').style.display=r.leveled?'block':'none';
+ $('accountAfter').textContent='Уровень '+profile.level+' · '+profile.xp+'/'+xpNeeded(profile.level)+' EXP · '+profile.coins+' монет';
+ if($('endStreak'))$('endStreak').innerHTML=profile.streak>1?'<span class="streakPill">🔥 '+profile.streak+' побед подряд</span>':'';
+}
+async function syncProfileToSupabase(){
+ if(!sb||!me)return;
+ try{
+  await sb.from('player_profiles').upsert({
+   user_id:me.id,nickname:me.nickname,level:profile.level,xp:profile.xp,coins:profile.coins,
+   games:profile.games,wins:profile.wins,updated_at:new Date().toISOString()
+  },{onConflict:'user_id'});
+ }catch(e){console.warn('profile sync skipped',e)}
+}
+
+
+function tgUser(){return TG?.initDataUnsafe?.user||null}
+function telegramNickname(){
+ const u=tgUser();
+ if(!u)return '';
+ return ((u.first_name||'')+(u.last_name?' '+u.last_name:'')).trim()||u.username||'Игрок';
+}
+function renderTelegramIdentity(){
+ const u=tgUser(),box=$('tgProfile');
+ if(!box||!u)return;
+ box.classList.add('show');
+ const display=telegramNickname();
+ $('tgDisplayName').textContent=display;
+ $('tgUsername').textContent=u.username?'@'+u.username:'Telegram игрок';
+ const wrap=$('tgAvatarWrap');
+ if(u.photo_url){
+   const img=document.createElement('img');img.className='tgAvatar';img.alt='';img.src=u.photo_url;
+   img.onerror=()=>{wrap.innerHTML='<div class="tgAvatarFallback">'+((u.first_name||'?')[0]||'?').toUpperCase()+'</div>'};
+   wrap.replaceChildren(img);
+ }else wrap.innerHTML='<div class="tgAvatarFallback">'+((u.first_name||'?')[0]||'?').toUpperCase()+'</div>';
+}
+function applyTelegramTheme(){
+ if(!TG)return;
+ try{
+   const p=TG.themeParams||{};
+   if(p.bg_color)document.documentElement.style.setProperty('--bg',p.bg_color);
+   if(p.text_color)document.documentElement.style.setProperty('--text',p.text_color);
+   if(p.secondary_bg_color)document.documentElement.style.setProperty('--card',p.secondary_bg_color);
+   if(p.button_color)document.documentElement.style.setProperty('--blue',p.button_color);
+ }catch(e){}
+}
+function updateTelegramBackButton(){
+ if(!TG?.BackButton)return;
+ const menu=$('menu')?.classList.contains('active');
+ try{menu?TG.BackButton.hide():TG.BackButton.show()}catch(e){}
+}
+function telegramBack(){
+ if($('exitModal')?.classList.contains('show')){$('exitModal').classList.remove('show');return}
+ if(gameStarted||gameMode==='ai'){requestExit();return}
+ if(match?.mode==='random'){cancelRandomSearch();return}
+ if(match){if(ch&&sb)sb.removeChannel(ch);clearInterval(lobbyPoll);clearInterval(readyPoll);match=null;screen('menu');updateTelegramBackButton();return}
+ screen('menu');updateTelegramBackButton();
+}
+function initTelegramMiniApp(){
+ if(!TG)return;
+ try{
+   TG.ready();TG.expand();TG.enableClosingConfirmation?.();
+   applyTelegramTheme();renderTelegramIdentity();
+   const nick=telegramNickname();if(nick)$('nick').value=nick.slice(0,20);
+   document.documentElement.style.setProperty('--h',(TG.viewportStableHeight||TG.viewportHeight||innerHeight)+'px');
+   TG.onEvent?.('viewportChanged',()=>document.documentElement.style.setProperty('--h',(TG.viewportStableHeight||TG.viewportHeight||innerHeight)+'px'));
+   TG.onEvent?.('themeChanged',applyTelegramTheme);
+   TG.BackButton?.onClick(telegramBack);
+   updateTelegramBackButton();
+ }catch(e){console.warn('Telegram init',e)}
+}
+function telegramRoomLink(roomCode){
+ if(TELEGRAM_BOT_USERNAME){
+   const bot=TELEGRAM_BOT_USERNAME.replace(/^@/,'');
+   return 'https://t.me/'+bot+'?startapp=room_'+encodeURIComponent(roomCode);
+ }
+ return location.origin+'/?room='+encodeURIComponent(roomCode);
+}
+const poly=[[245,855],[240,800],[220,748],[188,705],[150,663],[111,620],[76,576],[51,535],[35,496],[33,458],[44,426],[66,406],[94,401],[122,410],[153,431],[190,461],[220,478],[235,470],[239,443],[230,397],[217,337],[205,273],[201,215],[204,166],[217,130],[237,112],[256,118],[270,141],[276,179],[279,232],[282,303],[289,363],[303,390],[316,386],[321,358],[321,286],[320,205],[322,136],[330,82],[344,49],[361,39],[378,48],[390,75],[395,118],[396,177],[395,250],[395,326],[402,373],[414,391],[427,382],[436,346],[444,289],[452,224],[462,165],[474,126],[491,108],[510,111],[526,130],[534,160],[534,196],[527,241],[519,288],[509,341],[502,385],[504,415],[517,429],[532,420],[548,389],[565,351],[582,316],[602,288],[622,276],[642,282],[657,300],[663,326],[658,356],[645,388],[628,424],[610,462],[591,506],[573,558],[558,616],[546,674],[532,730],[511,784],[493,825],[487,855]];
+function ok(){return SUPABASE_URL.startsWith('https://')&&!SUPABASE_URL.includes('PASTE_')&&!SUPABASE_ANON_KEY.includes('PASTE_')}function screen(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');setTimeout(updateTelegramBackButton,0)}function t(s){const e=$('toast');e.textContent=s;e.classList.add('show');clearTimeout(e.x);e.x=setTimeout(()=>e.classList.remove('show'),750)}function id(){
+ const u=tgUser(),n=($('nick').value.trim()||telegramNickname()||'Игрок').slice(0,20);
+ if(u)return{id:String(u.id),nickname:n};
+ let deviceId=localStorage.getItem('palm50_device_id');
+ if(!deviceId){deviceId='web_'+crypto.randomUUID().replace(/-/g,'');localStorage.setItem('palm50_device_id',deviceId)}
+ return{id:deviceId,nickname:n}
+}function sh(a){for(let i=a.length-1;i;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}function code(){return Math.random().toString(36).slice(2,8).toUpperCase()}function inside(x,y){let c=false,j=poly.length-1;for(let i=0;i<poly.length;i++){const[xi,yi]=poly[i],[xj,yj]=poly[j];if((yi>y)!=(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)c=!c;j=i}return c}
+const CROSS_GRID={cols:25,rows:32};
+let finishBusy=false,targetStartedAt=0;
+let recentManualCrosses=[],comboLockUntil=0;
+function crossCellAllowed(gx,gy){
+ if(gx<0||gy<0||gx>=CROSS_GRID.cols||gy>=CROSS_GRID.rows)return false;
+ const cx=gx*28+14,cy=gy*28+14;
+ return !inside(cx,cy);
+}
+function mirrorCell(gx,gy){return [CROSS_GRID.cols-1-gx,gy]}
+function showComboFlash(added){
+ const e=$('comboFlash');if(!e)return;
+ e.textContent='⚡ ×2 COMBO! +'+added+' зеркальных ✕';e.classList.add('show');tone(980);haptic('heavy');
+ clearTimeout(e._x);e._x=setTimeout(()=>e.classList.remove('show'),1500);
+}
+function speedCoinReward(){
+ if(!targetStartedAt)return 0;
+ const sec=(performance.now()-targetStartedAt)/1000;targetStartedAt=0;
+ // Чем быстрее найдено число, тем больше бонус.
+ const bonus=sec<=2?3:sec<=4?2:sec<=6?1:0;
+ if(bonus>0){profile.coins+=bonus;saveProfile();syncProfileToSupabase();t('⚡ Быстрый поиск: +'+bonus+' 🪙');}
+ return bonus;
+}
+function isDiagonalFive(seq){
+ if(seq.length<5)return false;
+ const a=seq.slice(-5);
+ if(a[4].at-a[0].at>2000)return false;
+ const dx=a[1].gx-a[0].gx,dy=a[1].gy-a[0].gy;
+ if(Math.abs(dx)!==1||Math.abs(dy)!==1)return false;
+ for(let i=2;i<5;i++)if(a[i].gx-a[i-1].gx!==dx||a[i].gy-a[i-1].gy!==dy)return false;
+ return true;
+}
+async function maybeDiagonalCombo(){
+ const now=performance.now();if(now<comboLockUntil||!isDiagonalFive(recentManualCrosses))return;
+ comboLockUntil=now+2200;
+ const base=recentManualCrosses.slice(-5),mirrors=[];
+ for(const c of base){const [mx,my]=mirrorCell(c.gx,c.gy),k=mx+','+my;if(crossCellAllowed(mx,my)&&!crosses.has(k)&&!mirrors.some(x=>x.k===k))mirrors.push({gx:mx,gy:my,k});}
+ if(!mirrors.length)return;
+ if(gameMode==='ai'){
+   mirrors.forEach(c=>crosses.add(c.k));renderX();showComboFlash(mirrors.length);
+   if(crosses.size>=CROSS_CELL_LIMIT){clearAiTimers();setTimeout(()=>aiFinish('cells'),80)}
+   return;
+ }
+ if(!match)return;
+ let added=0;
+ for(const c of mirrors){
+   const {error}=await sb.from('match_crosses').insert({match_id:match.id,owner_id:me.id,cell_key:c.k});
+   if(!error){crosses.add(c.k);added++;await evt('cross',{cell_key:c.k,combo:true});}
+ }
+ if(added){renderX();showComboFlash(added);if(crosses.size>=CROSS_CELL_LIMIT)await finish('cells')}
+}
+function crossCellCapacity(){
+ let n=0;for(let gy=0;gy<32;gy++)for(let gx=0;gx<25;gx++)if(crossCellAllowed(gx,gy))n++;return n;
+}
+const CROSS_CELL_LIMIT=crossCellCapacity();
+function updateCellHud(oppCount=null){
+ if($('myCellsLeft'))$('myCellsLeft').textContent='осталось клеток: '+Math.max(0,CROSS_CELL_LIMIT-crosses.size);
+ const oc=oppCount!=null?oppCount:(gameMode==='ai'?aiCrosses.size:null);
+ if($('oppCellsLeft'))$('oppCellsLeft').textContent=oc==null?'лимит: '+CROSS_CELL_LIMIT:'осталось клеток: '+Math.max(0,CROSS_CELL_LIMIT-oc);
+}
+function haptic(v='light'){try{TG?.HapticFeedback?.impactOccurred(v)}catch(e){}}function tone(f){if(!soundOn)return;audio??=new(AudioContext||webkitAudioContext)();const o=audio.createOscillator(),g=audio.createGain();o.frequency.value=f;g.gain.value=.025;o.connect(g);g.connect(audio.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+.08);o.stop(audio.currentTime+.09)}
+function chatTone(){if(!soundOn)return;try{audio??=new(AudioContext||webkitAudioContext)();[660,880].forEach((f,i)=>{const o=audio.createOscillator(),g=audio.createGain();o.frequency.value=f;g.gain.value=.032;o.connect(g);g.connect(audio.destination);const st=audio.currentTime+i*.07;o.start(st);g.gain.setValueAtTime(.032,st);g.gain.exponentialRampToValueAtTime(.0001,st+.12);o.stop(st+.13)})}catch(e){}}
+function makeLayout(){const c=[];for(let y=45;y<860;y+=22)for(let x=35;x<665;x+=22){const a=[[x,y],[x-23,y],[x+23,y],[x,y-19],[x,y+19],[x-23,y-19],[x+23,y-19],[x-23,y+19],[x+23,y+19]];if(a.every(p=>inside(...p)))c.push([x,y])}sh(c);const o=[];for(const p of c)if(o.every(q=>Math.hypot(p[0]-q[0],p[1]-q[1])>=42)){o.push(p);if(o.length===50)break}return sh(o)}function renderNums(){$('nlayer').innerHTML='';layout.forEach((p,i)=>{const e=document.createElementNS('http://www.w3.org/2000/svg','text');e.setAttribute('x',p[0]);e.setAttribute('y',p[1]);e.setAttribute('class','num');e.textContent=i+1;e.onpointerdown=x=>{x.stopPropagation();tapNum(i+1)};$('nlayer').appendChild(e)})}function renderX(){
+ $('xlayer').innerHTML='';
+ function drawSet(set,cls){
+  for(const k of set){
+   const[gx,gy]=k.split(',').map(Number),x=gx*28,y=gy*28,p=2.2;
+   [[x+p,y+p,x+28-p,y+28-p],[x+28-p,y+p,x+p,y+28-p]].forEach(a=>{
+    const l=document.createElementNS('http://www.w3.org/2000/svg','line');
+    l.setAttribute('x1',a[0]);l.setAttribute('y1',a[1]);l.setAttribute('x2',a[2]);l.setAttribute('y2',a[3]);
+    l.setAttribute('class','xline');l.style.stroke=cls;const eq=profile?.equipped?.cross;l.classList.toggle('x-neon',eq==='neon_x');l.classList.toggle('x-fire',eq==='fire_x');$('xlayer').appendChild(l)
+   })
+  }
+ }
+ drawSet(crosses,getComputedStyle(document.documentElement).getPropertyValue('--crossColor').trim()||'#d92c2c');
+ if(gameMode==='ai')drawSet(aiCrosses,'#111');
+ $('myScore').textContent=crosses.size;
+ if(gameMode==='ai')$('oppScore').textContent=aiCrosses.size;
+ updateCellHud();
+}
+function point(e){const p=$('svg').createSVGPoint();p.x=e.clientX;p.y=e.clientY;const q=p.matrixTransform($('svg').getScreenCTM().inverse());return[q.x,q.y]}function hud(){
+ $('target').textContent=target??'—';
+ $('left').textContent=50-used.size;
+ if(!searcher)$('turn').textContent='—';
+ else if(searcher===me.id)$('turn').textContent='Ты ищешь';
+ else $('turn').textContent='Ты ставишь крестики';
+}
+async function cleanupMyWaitingRooms(mode=null){
+ if(!sb||!me)return;
+ try{
+   const {data:mine}=await sb.from('match_players').select('match_id').eq('user_id',me.id);
+   const ids=(mine||[]).map(x=>x.match_id);
+   if(!ids.length)return;
+   let q=sb.from('matches').select('id,mode,status').in('id',ids).eq('status','waiting');
+   if(mode)q=q.eq('mode',mode);
+   const {data:rooms}=await q;
+   for(const room of (rooms||[])){
+     const {data:ps}=await sb.from('match_players').select('user_id').eq('match_id',room.id);
+     if((ps||[]).length<=1){
+       await sb.from('match_players').delete().eq('match_id',room.id).eq('user_id',me.id);
+       await sb.from('matches').delete().eq('id',room.id).eq('status','waiting');
+     }
+   }
+ }catch(e){console.warn('cleanupMyWaitingRooms',e)}
+}
+
+async function createRoom(mode='friend'){
+ if(!ok())return alert('Supabase не подключён.');
+ me=id();
+ if(mode==='friend') await cleanupMyWaitingRooms('friend');
+ const r=code();
+ const {data:m,error}=await sb.from('matches').insert({room_code:r,mode,status:'waiting'}).select().single();
+ if(error){alert('Ошибка создания комнаты: '+error.message);return}
+ const {error:pErr}=await sb.from('match_players').insert({match_id:m.id,user_id:me.id,nickname:me.nickname,slot:1,layout:makeLayout()});
+ if(pErr){
+   await sb.from('matches').delete().eq('id',m.id);
+   alert('Ошибка добавления игрока: '+pErr.message);return
+ }
+ await enterLobby(m)
+}
+
+async function joinRoom(r){
+ if(!ok())return alert('Supabase не подключён.');
+ if(joiningBusy)return;
+ joiningBusy=true;
+ const btn=$('join');
+ const old=btn.textContent;
+ btn.disabled=true;btn.textContent='⏳ ПОДКЛЮЧАЕМСЯ...';
+ try{
+   me=id();
+   r=(r||'').replace(/[^a-z0-9]/gi,'').trim().toUpperCase();
+   $('joinCode').value=r;
+   if(r.length!==6)throw new Error('Код комнаты должен содержать 6 символов.');
+
+   const {data:m,error:mErr}=await sb.from('matches').select('*').eq('room_code',r).maybeSingle();
+   if(mErr)throw mErr;
+   if(!m)throw new Error('Комната '+r+' не найдена.');
+
+   const {data:ps,error:psErr}=await sb.from('match_players').select('*').eq('match_id',m.id).order('slot');
+   if(psErr)throw psErr;
+   const already=(ps||[]).find(p=>String(p.user_id)===String(me.id));
+
+   if(m.status==='finished')throw new Error('Эта игра уже закончена.');
+   if(m.status==='playing'&&!already)throw new Error('Игра в этой комнате уже началась.');
+   if(!already){
+     if((ps||[]).length>=2)throw new Error('Комната уже заполнена.');
+     const slot=(ps||[]).some(p=>p.slot===1)?2:1;
+     const {error:jErr}=await sb.from('match_players').insert({
+       match_id:m.id,user_id:me.id,nickname:me.nickname,slot,layout:makeLayout()
+     });
+     if(jErr)throw jErr;
+   }
+
+   // Проверяем, что запись игрока действительно появилась до перехода в лобби.
+   const {data:after,error:aErr}=await sb.from('match_players').select('user_id,slot,nickname').eq('match_id',m.id).order('slot');
+   if(aErr)throw aErr;
+   if(!(after||[]).some(p=>String(p.user_id)===String(me.id)))throw new Error('Сервер не подтвердил подключение. Попробуйте ещё раз.');
+
+   $('warn').textContent=(after||[]).length===2?'✅ Подключено. Оба игрока в комнате.':'✅ Подключено. Ждём второго игрока.';
+   await enterLobby(m);
+ }catch(e){
+   console.error('joinRoom',e);
+   alert('Не удалось войти: '+(e.message||e));
+   $('warn').textContent='Ошибка входа: '+(e.message||e);
+ }finally{
+   joiningBusy=false;btn.disabled=false;btn.textContent=old;
+ }
+}
+
+async function scanRandomRooms(token, ownMatch=null){
+ const {data:w,error}=await sb.from('matches')
+   .select('*').eq('status','waiting').eq('mode','random')
+   .order('created_at',{ascending:true}).limit(50);
+ if(error)throw error;
+
+ for(const room of (w||[])){
+   if(token!==matchmakingToken)return null;
+   if(ownMatch && room.id===ownMatch.id)continue;
+
+   // Если у нас уже есть своя комната, переходим только в более старую.
+   // Это детерминированно сводит двух одновременно начавших поиск игроков в одну очередь.
+   if(ownMatch && new Date(room.created_at).getTime() >= new Date(ownMatch.created_at).getTime())continue;
+
+   const {data:ps,error:psErr}=await sb.from('match_players').select('user_id,slot').eq('match_id',room.id);
+   if(psErr)continue;
+   if((ps||[]).some(p=>String(p.user_id)===String(me.id)))continue;
+   if((ps||[]).length!==1)continue;
+
+   const slot=(ps||[]).some(p=>p.slot===1)?2:1;
+   const {error:jErr}=await sb.from('match_players').insert({
+     match_id:room.id,user_id:me.id,nickname:me.nickname,slot,layout:makeLayout()
+   });
+   if(jErr)continue;
+
+   const {data:after}=await sb.from('match_players').select('user_id').eq('match_id',room.id);
+   if((after||[]).length===2 && (after||[]).some(p=>String(p.user_id)===String(me.id))){
+     if(ownMatch){
+       // Удаляем свою лишнюю очередь только ПОСЛЕ успешного входа в старую.
+       await sb.from('match_players').delete().eq('match_id',ownMatch.id).eq('user_id',me.id);
+       await sb.from('matches').delete().eq('id',ownMatch.id).eq('status','waiting');
+     }
+     return room;
+   }
+   await sb.from('match_players').delete().eq('match_id',room.id).eq('user_id',me.id);
+ }
+ return null;
+}
+
+function startRandomPolling(token){
+ clearInterval(matchmakingPoll);
+ matchmakingPoll=setInterval(async()=>{
+   if(token!==matchmakingToken||!match||gameStarted||match.mode!=='random'||match.status!=='waiting'){
+     clearInterval(matchmakingPoll);matchmakingPoll=null;return;
+   }
+   try{
+     const {data:ps}=await sb.from('match_players').select('user_id').eq('match_id',match.id);
+     if((ps||[]).length===2){
+       clearInterval(matchmakingPoll);matchmakingPoll=null;
+       searchingRandom=false;setRandomLobbyUi(false);await refreshLobby();return;
+     }
+     const joined=await scanRandomRooms(token,match);
+     if(joined){
+       clearInterval(matchmakingPoll);matchmakingPoll=null;
+       if(ch&&sb)sb.removeChannel(ch);
+       await enterLobby(joined);setRandomLobbyUi(false);
+     }
+   }catch(e){console.warn('random poll',e)}
+ },1100);
+}
+
+async function randomMatch(){
+ if(!ok())return alert('Supabase не подключён.');
+ if(matchmakingBusy||searchingRandom)return;
+ matchmakingBusy=true; searchingRandom=true;
+ const token=++matchmakingToken;
+ me=id();
+ $('random').disabled=true;
+ $('random').textContent='🔎 ИЩЕМ СОПЕРНИКА...';
+ $('warn').textContent='Поиск игрока, который тоже нажал «НАЙТИ СОПЕРНИКА»...';
+ try{
+   // Убираем свою старую зависшую очередь после предыдущего закрытия приложения.
+   await cleanupMyWaitingRooms('random');
+   if(token!==matchmakingToken)return;
+
+   const joined=await scanRandomRooms(token,null);
+   if(joined){
+     await enterLobby(joined);setRandomLobbyUi(false);return;
+   }
+
+   // Никого пока нет — создаём свою очередь и продолжаем искать,
+   // а не останавливаем matchmaking после одного запроса.
+   const r=code();
+   const {data:m,error:mErr}=await sb.from('matches').insert({room_code:r,mode:'random',status:'waiting'}).select().single();
+   if(mErr)throw mErr;
+   const {error:pErr}=await sb.from('match_players').insert({
+     match_id:m.id,user_id:me.id,nickname:me.nickname,slot:1,layout:makeLayout()
+   });
+   if(pErr)throw pErr;
+   await enterLobby(m);
+   setRandomLobbyUi(true);
+   startRandomPolling(token);
+ }catch(e){
+   console.error('randomMatch',e);
+   alert('Ошибка поиска соперника: '+(e.message||e));
+   searchingRandom=false;
+ }finally{
+   matchmakingBusy=false;
+   $('random').disabled=false;
+   $('random').textContent='⚡ НАЙТИ СОПЕРНИКА';
+ }
+}
+
+function setRandomLobbyUi(waiting){
+ searchingRandom=!!waiting && match?.mode==='random' && match?.status==='waiting';
+ if($('cancelSearch')){
+   $('cancelSearch').style.display=searchingRandom?'block':'none';
+   $('cancelSearch').disabled=false;
+   $('cancelSearch').textContent='✖ ОТМЕНИТЬ ПОИСК';
+ }
+ if($('invite'))$('invite').style.display=match?.mode==='random'?'none':'block';
+ if($('copy'))$('copy').style.display=match?.mode==='random'?'none':'block';
+ if(searchingRandom){
+   $('lobbyTitle').textContent='Поиск соперника';
+   $('roomCode').textContent='MATCH';
+   $('lobbyStatus').textContent='🔎 Ищем игрока... Можно отменить поиск кнопкой ниже.';
+ }
+}
+
+async function cancelRandomSearch(){
+ if(!match || match.mode!=='random' || gameStarted)return;
+ const cancelBtn=$('cancelSearch');
+ cancelBtn.disabled=true;cancelBtn.textContent='⏳ ОТМЕНЯЕМ...';
+ ++matchmakingToken; matchmakingBusy=false; searchingRandom=false;
+ clearInterval(matchmakingPoll);matchmakingPoll=null;
+ try{
+   const currentId=match.id;
+   await sb.from('match_players').delete().eq('match_id',currentId).eq('user_id',me.id);
+   const {data:left}=await sb.from('match_players').select('user_id').eq('match_id',currentId);
+   if(!(left||[]).length)await sb.from('matches').delete().eq('id',currentId).eq('status','waiting');
+ }catch(e){console.warn('cancel random search',e)}
+ clearInterval(lobbyPoll);clearInterval(readyPoll);clearInterval(turnPoll);
+ if(ch&&sb)sb.removeChannel(ch);
+ match=null;gameStarted=false;gameMode='pvp';
+ cancelBtn.style.display='none';cancelBtn.disabled=false;cancelBtn.textContent='✖ ОТМЕНИТЬ ПОИСК';
+ $('invite').style.display='block';$('copy').style.display='block';
+ $('warn').textContent='Поиск отменён.';
+ screen('menu');
+}
+async function enterLobby(m){
+ match=m;gameStarted=false;finishBusy=false;rewardGrantedForCurrentGame=false;coinRunning=false;coinDone=false;countdownRunning=false;readyIds=new Set();clearInterval(readyPoll);gameMode='pvp';
+ screen('lobby');$('roomCode').textContent=m.room_code;
+ sub();
+ clearInterval(lobbyPoll);
+ lobbyPoll=setInterval(async()=>{if(match&&!gameStarted&&gameMode==='pvp'){await refreshLobby();await syncMatchState()}},1000);
+ await refreshLobby();
+ await syncMatchState();
+}
+
+async function refreshLobby(){
+ if(!match||gameMode!=='pvp')return;
+ const {data:p,error}=await sb.from('match_players').select('*').eq('match_id',match.id).order('slot');
+ if(error){console.warn(error);return}
+ players=p||[];
+ myP=players.find(x=>x.user_id===me.id);
+ opp=players.find(x=>x.user_id!==me.id);
+ $('players').innerHTML=players.map(x=>'<div class="row"><b>'+x.nickname+'</b><span>'+(x.user_id===me.id?'Ты':'Соперник')+'</span></div>').join('');
+ $('lobbyStatus').textContent=players.length<2?(match?.mode==='random'?'🔎 Ищем соперника...':'Ожидаем соперника...'):'Оба игрока подключены. Подтвердите готовность.';
+ if(match?.mode==='random')setRandomLobbyUi(players.length<2);
+ if(players.length===2){ searchingRandom=false; clearInterval(matchmakingPoll); matchmakingPoll=null; if($('cancelSearch'))$('cancelSearch').style.display='none'; }
+ if(players.length===2 && match.status==='waiting' && !$('readyModal').classList.contains('show') && !countdownRunning && !coinRunning){
+   await openReadyGate();
+ }
+ await syncMatchState();
+}
+
+
+async function showTurnNotice(icon,title,number,text,duration=1500){
+ turnNoticeBusy=true;
+ $('turnNoticeIcon').textContent=icon||'•';
+ $('turnNoticeTitle').textContent=title||'';
+ $('turnNoticeNumber').textContent=number??'';
+ $('turnNoticeNumber').style.display=(number===null||number===undefined||number==='')?'none':'block';
+ $('turnNoticeText').textContent=text||'';
+ $('turnNotice').classList.add('show');
+ haptic('medium');
+ await new Promise(r=>setTimeout(r,duration));
+ $('turnNotice').classList.remove('show');
+ turnNoticeBusy=false;
+}
+
+async function showOpeningHint(firstChooser){
+ if(hintRunning)return;
+ hintRunning=true;
+ const mine=firstChooser===me.id;
+ $('hintIcon').textContent=mine?'✏️':'🔎';
+ $('hintTitle').textContent=mine?'Ты начинаешь':'Соперник начинает';
+ $('hintText').textContent=mine
+  ? 'Ты загадываешь число. Пока соперник ищет его, быстро ставь крестики по свободным клеткам снаружи ладони.'
+  : 'Соперник сейчас загадает тебе число. Найди его внутри ладони. Пока ты ищешь, ставить крестики нельзя.';
+ $('hintModal').classList.add('show');
+ for(let n=3;n>=1;n--){
+  $('hintCount').textContent=n;
+  tone(n===1?700:450);
+  await new Promise(r=>setTimeout(r,850));
+ }
+ $('hintModal').classList.remove('show');
+ $('turnNotice').classList.remove('show');turnNoticeBusy=false;
+ hintRunning=false;
+ if(firstChooser===me.id){
+   if(gameMode==='ai') openPicker();
+   else openPicker();
+ }else{
+   t(gameMode==='ai'?'AI загадывает число...':'Соперник выбирает число...');
+ }
+}
+
+
+async function openReadyGate(){
+ if(gameMode!=='pvp'||gameStarted||players.length<2)return;
+ screen('lobby');
+ $('coinModal').classList.remove('show');
+ $('readyMeName').textContent=myP?.nickname||me.nickname;
+ $('readyOppName').textContent=opp?.nickname||'Соперник';
+ $('readyRole').innerHTML='<b>Оба игрока подключены.</b><br>Нажми «ГОТОВ?». Когда оба подтвердят готовность — сразу начнётся жеребьёвка.';
+ $('readyBtn').style.display='block';
+ $('readyBtn').disabled=readyIds.has(me.id);
+ $('readyBtn').textContent=readyIds.has(me.id)?'✅ ГОТОВ':'✅ ГОТОВ?';
+ $('readyCountdown').style.display='none';
+ $('readyWait').style.display='block';
+ $('readyWait').textContent='Игра начнётся, когда будут готовы оба.';
+ $('readyModal').classList.add('show');
+ clearInterval(readyPoll);
+ readyPoll=setInterval(refreshReadyState,500);
+ await refreshReadyState();
+}
+
+async function markReady(){
+ if(gameMode!=='pvp'||!match||gameStarted)return;
+ $('readyBtn').disabled=true;
+ $('readyBtn').textContent='✅ ГОТОВ';
+ haptic('medium');tone(620);
+
+ // Не создаём повторный ready от одного и того же игрока.
+ const {data:old}=await sb.from('match_events')
+   .select('id').eq('match_id',match.id).eq('event_type','ready').eq('actor_id',me.id).limit(1);
+ if(!old?.length) await evt('ready',{});
+ readyIds.add(me.id);
+ renderReadyState();
+ await refreshReadyState();
+}
+
+function renderReadyState(){
+ const meReady=readyIds.has(me.id),oppReady=opp&&readyIds.has(opp.user_id);
+ $('readyMeState').textContent=meReady?'✅ готов':'⏳ не готов';
+ $('readyOppState').textContent=oppReady?'✅ готов':'⏳ не готов';
+ if(meReady){
+   $('readyBtn').disabled=true;
+   $('readyBtn').textContent='✅ ГОТОВ';
+ }
+}
+
+async function refreshReadyState(){
+ if(!match||gameMode!=='pvp'||gameStarted)return;
+ const {data:r,error}=await sb.from('match_events')
+   .select('actor_id').eq('match_id',match.id).eq('event_type','ready');
+ if(error)return;
+ readyIds=new Set((r||[]).map(x=>x.actor_id));
+ renderReadyState();
+
+ const both=players.length===2 && players.every(p=>readyIds.has(p.user_id));
+ if(both && !countdownRunning) await beginReadyCountdown();
+}
+
+async function beginReadyCountdown(){
+ if(countdownRunning||gameStarted||coinRunning)return;
+ countdownRunning=true;
+ clearInterval(readyPoll);
+ $('readyBtn').style.display='none';
+ $('readyCountdown').style.display='none';
+ $('readyWait').style.display='block';
+ $('readyWait').textContent='✅ Оба готовы! Запускаем жеребьёвку...';
+ tone(780);haptic('medium');
+ await new Promise(r=>setTimeout(r,350));
+ $('readyModal').classList.remove('show');
+
+ // Один из клиентов атомарно переводит waiting -> playing.
+ // Второй клиент получит тот же результат через realtime/polling.
+ const {data:fresh,error:fErr}=await sb.from('matches').select('*').eq('id',match.id).single();
+ if(fErr){console.warn('ready start read',fErr);countdownRunning=false;return}
+ match=fresh||match;
+ if(match.status==='waiting'){
+   const chosen=players[Math.floor(Math.random()*2)].user_id;
+   const seeker=players.find(x=>x.user_id!==chosen).user_id;
+   const {data:started,error:uErr}=await sb.from('matches')
+     .update({status:'playing',chooser_id:chosen,searcher_id:seeker,updated_at:new Date().toISOString()})
+     .eq('id',match.id).eq('status','waiting').select().maybeSingle();
+   if(uErr){console.warn('start after ready',uErr);countdownRunning=false;return}
+   if(started){
+     match=started;
+     await evt('started',{chooser:started.chooser_id,searcher:started.searcher_id});
+     countdownRunning=false;
+     await startWithCoin(started.chooser_id,started.searcher_id);
+     return;
+   }
+ }
+ countdownRunning=false;
+ await syncMatchState();
+}
+
+async function syncMatchState(){
+ if(!match)return;
+ const {data:m,error}=await sb.from('matches').select('*').eq('id',match.id).single();
+ if(error)return;
+ match=m;
+ if(m.status==='playing' && m.chooser_id && m.searcher_id && !gameStarted && !coinRunning && !coinDone){
+   await startWithCoin(m.chooser_id,m.searcher_id);
+   return;
+ }
+ if(gameStarted && m.status==='playing') applyRemoteTurnState(m);
+}
+
+function applyRemoteTurnState(m){
+ if(!m||gameMode!=='pvp')return;
+ const prevTarget=target;
+ target=m.target_number??null;
+ searcher=m.searcher_id??null;
+ chooser=m.chooser_id??null;
+ used=new Set(m.used_numbers||[]);
+ hud();
+ // Если новый номер пришёл из БД, сразу сообщаем игроку, который должен искать.
+ if(target!=null && target!==prevTarget && searcher===me.id){
+    targetStartedAt=performance.now();
+   t('Ищи '+target);
+   tone(620);haptic('medium');
+ }
+}
+
+async function syncPlayingState(){
+ if(!match||gameMode!=='pvp'||!gameStarted)return;
+ const {data:m,error}=await sb.from('matches').select('status,target_number,chooser_id,searcher_id,used_numbers,winner_id').eq('id',match.id).single();
+ if(error)return;
+ if(m.status==='finished')return;
+ match={...match,...m};
+ applyRemoteTurnState(match);
+}
+
+async function startWithCoin(firstChooser,firstSearcher){
+ clearInterval(matchmakingPoll);matchmakingPoll=null;searchingRandom=false;
+ if(gameStarted||coinRunning||coinDone)return;
+ coinRunning=true;
+ await load();
+ chooser=firstChooser;searcher=firstSearcher;
+ $('coinModal').classList.add('show');
+ $('coin').classList.add('flip');$('coin').textContent='🪙';
+ $('coinResult').textContent='Подбрасываем монету...';
+ tone(520);
+ await new Promise(r=>setTimeout(r,1800));
+ $('coin').classList.remove('flip');$('coin').textContent='★';
+ const first=players.find(p=>p.user_id===firstChooser);
+ $('coinResult').textContent=(first?.user_id===me.id?'Первый ход твой!':'Первым ходит '+(first?.nickname||'соперник'));
+ haptic('medium');tone(760);
+ await new Promise(r=>setTimeout(r,1500));
+ $('coinModal').classList.remove('show');
+ coinRunning=false;
+ coinDone=true;
+ gameStarted=true;
+ clearInterval(lobbyPoll);
+ clearInterval(readyPoll);
+ clearInterval(turnPoll);
+ turnPoll=setInterval(syncPlayingState,500);
+ screen('game');
+ $('myName').textContent=myP?.nickname||me.nickname;
+ $('oppName').textContent=opp?.nickname||'Соперник';
+ hud();
+ await showOpeningHint(firstChooser);
+}
+
+function sub(){
+ if(ch)sb.removeChannel(ch);
+ ch=sb.channel('m'+match.id)
+  .on('postgres_changes',{event:'INSERT',schema:'public',table:'match_players',filter:'match_id=eq.'+match.id},async()=>{await refreshLobby()})
+  .on('postgres_changes',{event:'UPDATE',schema:'public',table:'matches',filter:'id=eq.'+match.id},async payload=>{
+     match=payload.new;
+     if(match.status==='playing'&&match.chooser_id&&match.searcher_id&&!gameStarted&&!coinRunning&&!coinDone){
+       await startWithCoin(match.chooser_id,match.searcher_id);
+       return;
+     }
+     if(gameStarted&&match.status==='playing') applyRemoteTurnState(match);
+  })
+  .on('postgres_changes',{event:'INSERT',schema:'public',table:'match_events',filter:'match_id=eq.'+match.id},x=>onEvt(x.new))
+  .subscribe(async status=>{
+     if(status==='SUBSCRIBED') await syncMatchState();
+  });
+}
+async function evt(type,payload){await sb.from('match_events').insert({match_id:match.id,actor_id:me.id,event_type:type,payload})}
+async function onEvt(e){if(e.event_type==='chat'&&e.actor_id!==me.id){showChatBubble(e.payload?.text||'',true,opp?.nickname||'Соперник');chatTone();haptic('light');}if(e.event_type==='started'){if(!gameStarted&&!coinRunning&&!coinDone)await startWithCoin(e.payload.chooser,e.payload.searcher)}if(e.event_type==='ready'){readyIds.add(e.actor_id);renderReadyState();if(!gameStarted)refreshReadyState()}if(e.event_type==='target'){target=e.payload.number;searcher=e.payload.searcher;chooser=e.actor_id;hud();if(searcher===me.id){await showTurnNotice('🔎','ТЫ ИЩЕШЬ',target,'Найди это число внутри своей ладони. Пока ищешь — крестики ставить нельзя.',1200);targetStartedAt=performance.now()}}if(e.event_type==='found'){used.add(e.payload.number);target=null;searcher=null;chooser=null;hud();if(e.actor_id!==me.id)await showTurnNotice('✅','СОПЕРНИК НАШЁЛ',e.payload.number,'Теперь соперник загадывает следующее число. Приготовься искать.',1500)}if(e.event_type==='cross'){if(e.actor_id!==me.id){const{data:c}=await sb.from('match_crosses').select('id').eq('match_id',match.id).eq('owner_id',e.actor_id);const n=c?.length||0;$('oppScore').textContent=n;updateCellHud(n);if(n>=CROSS_CELL_LIMIT&&!finishBusy)finish('cells')}}if(e.event_type==='finish')finishLocal(e.payload)}async function load(){const{data:m}=await sb.from('matches').select('*').eq('id',match.id).single();match=m;const{data:p}=await sb.from('match_players').select('*').eq('match_id',match.id);players=p;myP=p.find(x=>x.user_id===me.id);opp=p.find(x=>x.user_id!==me.id);layout=myP.layout;used=new Set(m.used_numbers||[]);target=m.target_number;searcher=m.searcher_id;chooser=m.chooser_id;const{data:c}=await sb.from('match_crosses').select('*').eq('match_id',match.id).eq('owner_id',me.id);crosses=new Set((c||[]).map(x=>x.cell_key));renderNums();renderX();hud();if(gameMode==='pvp'&&opp){const{data:oc}=await sb.from('match_crosses').select('id').eq('match_id',match.id).eq('owner_id',opp.user_id);$('oppScore').textContent=oc?.length||0;updateCellHud(oc?.length||0)}}
+
+const AI_LEVELS={
+ easy:{name:'AI • Легко',findMin:6500,findMax:9800,crossEvery:1750},
+ medium:{name:'AI • Средне',findMin:3800,findMax:6100,crossEvery:1080},
+ hard:{name:'AI • Сложно',findMin:2100,findMax:3700,crossEvery:650}
+};
+function clearAiTimers(){clearTimeout(aiFindTimer);clearInterval(aiCrossTimer);clearTimeout(aiChatTimer);aiFindTimer=null;aiCrossTimer=null;aiChatTimer=null}
+
+
+const AI_CHAT={
+ start:['Ну шо, погнали? 😎','Бро, я сегодня в форме 🤖','Давай, только без тормозов 😂','Ну всё, сейчас посмотрим кто тут PALM-мастер 😏'],
+ choose:['Ищи внимательно 👀','Ну давай, найди его 😈','Я его нормально так спрятал 😏','Та не спеши... хотя нет, спеши 😂'],
+ found:['Есть! ⚡ Теперь твоя очередь','Нашёл. Ну шо, дальше? 😎','А ты думал я долго буду искать? 😂'],
+ aiFound:['Та я же говорил 😏 нашёл!','Бро, это было слишком легко 😂','Есть число. Не расслабляйся 🔥'],
+ humanFound:['Хорош! 👏','Неплохо, признаю 😏','Та ты шо, реально нашёл? 😂','Ладно-ладно, сейчас отыграюсь 😈'],
+ humanFast:['Та ты шо! Где ты так быстро его увидел? 😂','Опа. Вот это быстро 🔥','Бро, ты там точно не подсматриваешь? 😏'],
+ humanSlow:['Ахаха, я уже чай успел сделать ☕😂','Ну наконец-то 😅 я уже переживать начал','Шо ты там искал столько времени? 😂'],
+ late:['Финиш уже рядом 🔥','Ну всё, сейчас будет жарко 😈','Последние числа. Не расслабляйся 👀'],
+ win:['Ну шо, реванш? 😎','Ахаха, машина победила 🤖😂','Не расстраивайся, бро. Ещё катку? 😏'],
+ lose:['Та ну тебя 😂 Хорош сыграл','Ладно, эту забрал ты 😏 Реванш!','Шо ты гонишь, как ты меня обошёл? 😂🔥']
+};
+function aiSay(kind,force=false){
+ if(gameMode!=='ai'||!gameStarted)return;
+ const now=Date.now();if(!force&&now-aiLastChatAt<4200)return;
+ const arr=AI_CHAT[kind]||AI_CHAT.choose;
+ const chance=aiDifficulty==='hard'?.72:aiDifficulty==='medium'?.58:.42;
+ if(!force&&Math.random()>chance)return;
+ aiLastChatAt=now;
+ clearTimeout(aiChatTimer);
+ aiChatTimer=setTimeout(()=>{if(gameMode!=='ai'||!gameStarted)return;const text=arr[Math.floor(Math.random()*arr.length)];showChatBubble(text,true,opp?.nickname||'AI');chatTone();haptic('light')},380+Math.random()*720);
+}
+async function startAiGame(level){
+ gameMode='ai';aiDifficulty=level;finishBusy=false;targetStartedAt=0;recentManualCrosses=[];comboLockUntil=0;rewardGrantedForCurrentGame=false;clearAiTimers();aiLastChatAt=0;clearInterval(lobbyPoll);
+ me=id();match=null;players=[];
+ myP={user_id:me.id,id:me.id,nickname:me.nickname,layout:makeLayout()};
+ opp={user_id:'AI',id:'AI',nickname:AI_LEVELS[level].name};
+ layout=myP.layout;used=new Set();target=null;crosses=new Set();aiCrosses=new Set();
+ gameStarted=false;coinRunning=false;coinDone=false;countdownRunning=false;readyIds=new Set();chooser=null;searcher=null;
+ $('aiModal').classList.remove('show');
+ $('myName').textContent=me.nickname;$('oppName').textContent=opp.nickname;
+ renderNums();renderX();hud();
+ const firstChooser=Math.random()<.5?me.id:'AI';
+ const firstSearcher=firstChooser===me.id?'AI':me.id;
+ chooser=firstChooser;searcher=firstSearcher;
+ await startAiWithCoin(firstChooser,firstSearcher);setTimeout(()=>aiSay('start',true),700);
+}
+
+async function startAiWithCoin(firstChooser,firstSearcher){
+ coinRunning=true;
+ screen('game');
+ $('coinModal').classList.add('show');
+ $('coin').classList.add('flip');$('coin').textContent='🪙';
+ $('coinResult').textContent='Подбрасываем монету...';
+ tone(520);await new Promise(r=>setTimeout(r,1800));
+ $('coin').classList.remove('flip');$('coin').textContent='★';
+ $('coinResult').textContent=firstChooser===me.id?'Первый ход твой!':'Первым ходит '+opp.nickname;
+ haptic('medium');tone(760);await new Promise(r=>setTimeout(r,1400));
+ $('coinModal').classList.remove('show');coinRunning=false;gameStarted=true;
+ hud();aiSay('start',true);await showOpeningHint(firstChooser);
+ if(firstChooser==='AI') aiChooseForHuman();
+}
+
+function aiChooseForHuman(){
+ if(gameMode!=='ai'||used.size>=50)return aiFinish('numbers');
+ clearAiTimers();
+ const a=Array.from({length:50},(_,i)=>i+1).filter(n=>!used.has(n));
+ target=a[Math.floor(Math.random()*a.length)];aiTargetAt=Date.now();targetStartedAt=performance.now();
+ chooser='AI';searcher=me.id;hud();t('AI загадал '+target);aiSay('choose');aiSay(used.size>38?'late':'choose');
+ startAiCrossing();
+}
+
+function startAiCrossing(){
+ clearInterval(aiCrossTimer);
+ const cfg=AI_LEVELS[aiDifficulty];
+ aiCrossTimer=setInterval(()=>{
+  if(gameMode!=='ai'||chooser!=='AI'||searcher!==me.id||!target)return;
+  for(let tries=0;tries<500;tries++){
+   const gx=Math.floor(Math.random()*25),gy=Math.floor(Math.random()*32),k=gx+','+gy;
+   if(crossCellAllowed(gx,gy)&&!aiCrosses.has(k)){
+    aiCrosses.add(k);renderX();tone(170);
+    if(aiCrosses.size>=CROSS_CELL_LIMIT){clearAiTimers();setTimeout(()=>aiFinish('cells'),80)}
+    break;
+   }
+  }
+ },cfg.crossEvery);
+}
+
+function aiSearchNumber(){
+ clearAiTimers();
+ const cfg=AI_LEVELS[aiDifficulty];
+ const delay=cfg.findMin+Math.random()*(cfg.findMax-cfg.findMin);
+ aiFindTimer=setTimeout(()=>{
+  if(gameMode!=='ai'||searcher!=='AI'||!target)return;
+  const n=target;used.add(n);target=null;searcher=null;chooser=null;hud();
+  t('AI нашёл '+n);aiSay('aiFound');aiSay(used.size>38?'late':'found');
+  if(used.size>=44)aiSay('late');
+ if(used.size>=50)return aiFinish('numbers');
+  // AI нашёл число => теперь AI загадывает тебе.
+  setTimeout(aiChooseForHuman,700);
+ },delay);
+}
+
+function aiSetTarget(n){
+ $('picker').classList.remove('show');
+ if($('chatModal'))$('chatModal').classList.remove('show');if($('chatFeed'))$('chatFeed').innerHTML='';
+ target=n;chooser=me.id;searcher='AI';hud();
+ t('AI ищет '+n+' — ставь крестики!');
+ aiSearchNumber();
+}
+
+function aiHumanFound(n){
+ const dt=Date.now()-aiTargetAt; speedCoinReward();clearAiTimers();
+ used.add(n);target=null;searcher=null;chooser=null;hud();tone(800);haptic('medium');aiSay(dt<3500?'humanFast':'humanSlow',true);aiSay(used.size>38?'late':'humanFound');
+ if(used.size>=50)return aiFinish('numbers');
+ setTimeout(()=>openPicker(),500);
+}
+
+function aiFinish(reason='numbers'){
+ if(finishBusy)return;finishBusy=true;clearAiTimers();gameStarted=false;
+ const a=crosses.size,b=aiCrosses.size,won=a>b;
+ $('endTitle').textContent=won?'Ты победил!':a<b?'AI победил':'Ничья!';
+ $('endText').textContent=me.nickname+': '+a+' крестиков · '+opp.nickname+': '+b+' · '+(reason==='cells'?'Клетки на поле закончились':'Закончились числа');
+ const reward=grantRewards(won,'ai');showRewards(reward);$('streakText').textContent=profile.streak>1?'🔥 Серия побед: '+profile.streak:'';
+ $('end').classList.add('show');aiSay(won?'lose':'win',true);syncProfileToSupabase();setTimeout(()=>{finishBusy=false},600);
+}
+
+function openPicker(){
+ const a=Array.from({length:50},(_,i)=>i+1).filter(n=>!used.has(n));
+ if(!a.length)return gameMode==='ai'?aiFinish('numbers'):finish('numbers');
+ $('pickGrid').innerHTML='';
+ a.forEach(n=>{const b=document.createElement('button');b.textContent=n;b.onclick=()=>gameMode==='ai'?aiSetTarget(n):setTarget(n);$('pickGrid').appendChild(b)});
+ $('picker').classList.add('show')
+}async function setTarget(n){
+ $('picker').classList.remove('show');
+ const s=opp.user_id;
+ target=n;searcher=s;chooser=me.id;hud();
+ const {error}=await sb.from('matches').update({target_number:n,chooser_id:me.id,searcher_id:s,updated_at:new Date().toISOString()}).eq('id',match.id);
+ if(error){t('Не удалось отправить число');console.error('setTarget',error);openPicker();return}
+ await evt('target',{number:n,searcher:s});
+ await syncPlayingState();
+ await showTurnNotice('✖️','СОПЕРНИК ИЩЕТ',n,'Ставь крестики по свободным клеткам снаружи ладони, пока соперник ищет число.',1400);
+}async function tapNum(n){
+ if(turnNoticeBusy)return;
+ if(searcher!==me.id||n!==target){if(searcher===me.id){haptic();t('Ищи '+target)}return}
+ if(gameMode==='ai'){aiHumanFound(n);return}
+ const foundNumber=n;
+ speedCoinReward();
+ used.add(n);const arr=[...used];
+ target=null;searcher=null;chooser=me.id;hud();
+ const {error}=await sb.from('matches').update({target_number:null,used_numbers:arr,chooser_id:me.id,searcher_id:null,updated_at:new Date().toISOString()}).eq('id',match.id);
+ if(error){console.error('found update',error);await syncPlayingState();return}
+ await evt('found',{number:foundNumber});
+ tone(800);haptic('medium');
+ if(used.size>=50){finish('numbers');return}
+ await showTurnNotice('✅','ЧИСЛО НАЙДЕНО',foundNumber,'ТВОЙ ХОД — теперь загадай сопернику следующее число.',1600);
+ openPicker();
+}
+$('svg').onpointerdown=async e=>{
+ if(!gameStarted||turnNoticeBusy)return;
+ if(!target||!searcher||chooser!==me.id||searcher===me.id){
+  if(searcher===me.id)t('Ты ищешь число — крестики ставить нельзя');
+  return;
+ }
+ const[x,y]=point(e),gx=Math.floor(x/28),gy=Math.floor(y/28),cx=gx*28+14,cy=gy*28+14,k=gx+','+gy;
+ if(inside(cx,cy)){t('Крестики только снаружи ладони');return}
+ if(!crossCellAllowed(gx,gy)){t('Эта клетка недоступна');return}
+ if(crosses.has(k)){t('В этой клетке уже есть крестик');return}
+ if(gameMode==='ai'){
+  crosses.add(k);recentManualCrosses.push({gx,gy,at:performance.now()});recentManualCrosses=recentManualCrosses.filter(c=>performance.now()-c.at<=2200);renderX();tone(180);haptic('light');await maybeDiagonalCombo();
+  if(crosses.size>=CROSS_CELL_LIMIT){clearAiTimers();setTimeout(()=>aiFinish('cells'),80)}
+  return;
+ }
+ if(!match)return;
+ const{error}=await sb.from('match_crosses').insert({match_id:match.id,owner_id:me.id,cell_key:k});
+ if(error)return;
+ crosses.add(k);recentManualCrosses.push({gx,gy,at:performance.now()});recentManualCrosses=recentManualCrosses.filter(c=>performance.now()-c.at<=2200);renderX();tone(180);haptic('light');await evt('cross',{cell_key:k});await maybeDiagonalCombo();if(crosses.size>=CROSS_CELL_LIMIT)await finish('cells')
+};
+async function finish(reason='numbers'){
+ if(finishBusy||!match||gameMode!=='pvp')return;finishBusy=true;
+ try{
+  const {data:fresh}=await sb.from('matches').select('status').eq('id',match.id).single();
+  if(fresh?.status==='finished')return;
+  const{data:a}=await sb.from('match_crosses').select('id').eq('match_id',match.id).eq('owner_id',me.id),{data:b}=await sb.from('match_crosses').select('id').eq('match_id',match.id).eq('owner_id',opp.user_id);
+  const ms=a?.length||0,os=b?.length||0,w=ms>os?me.id:os>ms?opp.user_id:null;
+  await sb.from('matches').update({status:'finished',winner_id:w}).eq('id',match.id).neq('status','finished');
+  await evt('finish',{winner:w,scores:{[me.id]:ms,[opp.user_id]:os},reason});
+ }finally{setTimeout(()=>{finishBusy=false},600)}
+}
+function finishLocal(p){
+ const a=p.scores?.[me.id]||0,b=p.scores?.[opp.user_id]||0,won=a>b;
+ $('endTitle').textContent=won?'Ты победил!':a<b?'Соперник победил':'Ничья!';
+ const reasonText=p.reason==='cells'?'Свободные клетки на листе закончились':'Закончились все 50 чисел';
+ $('endText').textContent=myP.nickname+': '+a+' · '+opp.nickname+': '+b+' · '+reasonText;
+ const reward=grantRewards(won,'pvp');showRewards(reward);$('streakText').textContent=profile.streak>1?'🔥 Серия побед: '+profile.streak:'';$('end').classList.add('show');saveLead(a,won);syncProfileToSupabase()
+}
+async function saveLead(score,won){const{data:r}=await sb.from('leaderboard').select('*').eq('telegram_id',me.id).maybeSingle();await sb.from('leaderboard').upsert({telegram_id:me.id,nickname:me.nickname,best_score:Math.max(score,r?.best_score||0),wins:(r?.wins||0)+(won?1:0),games:(r?.games||0)+1,updated_at:new Date().toISOString()},{onConflict:'telegram_id'})}
+async function leaders(){
+ $('leadModal').classList.add('show');
+ $('leadStatus').textContent='Загрузка...';
+ $('leaders').innerHTML='';
+ if(!ok()){ $('leadStatus').textContent='Сначала подключи Supabase'; return; }
+ try{
+   const {data:d,error}=await sb.from('leaderboard').select('*').order('best_score',{ascending:false}).order('wins',{ascending:false}).limit(50);
+   if(error) throw error;
+   $('leadStatus').textContent=(d&&d.length)?'TOP-50':'Пока никто не сыграл.';
+   $('leaders').innerHTML=(d||[]).map((r,i)=>'<div class="lead"><b>#'+(i+1)+'</b><b>'+r.nickname+'</b><span>'+r.best_score+' ✕</span><span>'+r.wins+' побед</span></div>').join('');
+ }catch(e){
+   console.error(e);
+   $('leadStatus').textContent='Ошибка загрузки рейтинга: '+(e.message||e);
+ }
+}
+
+function showChatBubble(text,isOpp=false,name='Ты'){
+ text=String(text||'').trim().slice(0,60);if(!text)return;
+ const b=document.createElement('div');b.className='chatBubble'+(isOpp?' opp':'');
+ const n=document.createElement('span');n.className='chatName';n.textContent=name+':';b.appendChild(n);b.appendChild(document.createTextNode(' '+text));
+ $('chatFeed').prepend(b);setTimeout(()=>b.remove(),3300);
+}
+async function sendChat(text){
+ text=String(text||'').trim().slice(0,60);if(!text||!gameStarted)return;
+ showChatBubble(text,false,myP?.nickname||me?.nickname||'Ты');$('chatModal').classList.remove('show');$('chatInput').value='';haptic('light');
+ if(gameMode==='pvp'&&match)try{await evt('chat',{text})}catch(e){console.warn('chat',e)}
+}
+function shareChallenge(){
+ const u=match?.room_code?telegramRoomLink(match.room_code):GAME_URL;const text='⚔️ Сыграешь против меня в PALM 50?';
+ try{if(TG?.openTelegramLink)TG.openTelegramLink('https://t.me/share/url?url='+encodeURIComponent(u)+'&text='+encodeURIComponent(text));else navigator.share?.({title:'PALM 50',text,url:u})}catch(e){}
+}
+async function requestRematch(){
+ $('end').classList.remove('show');
+ if(gameMode==='ai'){startAiGame(aiDifficulty);return}
+ if(!opp){backToMenu();return}
+ // Надёжный реванш создаёт новую приватную комнату; текущий соперник получает предложение через чат/ссылку.
+ await createRoom('friend');t('Новая комната для реванша создана');
+}
+
+function requestExit(){
+ if(!gameStarted && !match && gameMode!=='ai')return;
+ $('exitText').textContent=gameMode==='pvp'
+  ?'Если выйти из PvP сейчас, сопернику будет засчитана победа.'
+  :'Выйти из игры с AI и вернуться в главное меню?';
+ $('exitModal').classList.add('show');
+}
+function backToMenu(){
+ $('exitModal').classList.remove('show');
+ $('end').classList.remove('show');
+ $('readyModal').classList.remove('show');
+ $('coinModal').classList.remove('show');
+ $('hintModal').classList.remove('show');
+ $('picker').classList.remove('show');
+ clearInterval(lobbyPoll);clearInterval(readyPoll);clearInterval(turnPoll);clearAiTimers();
+ if(ch&&sb)sb.removeChannel(ch);
+ gameStarted=false;match=null;gameMode='pvp';
+ screen('menu');renderProfile();
+}
+async function confirmExitMatch(){
+ $('exitModal').classList.remove('show');
+ if(gameMode==='ai'){backToMenu();return}
+ if(match&&me&&opp){
+  try{
+   const myScore=crosses.size;
+   const {data:o}=await sb.from('match_crosses').select('id').eq('match_id',match.id).eq('owner_id',opp.user_id);
+   const oppScore=o?.length||0;
+   await sb.from('matches').update({status:'finished',winner_id:opp.user_id,updated_at:new Date().toISOString()}).eq('id',match.id);
+   await evt('finish',{winner:opp.user_id,forfeit:true,scores:{[me.id]:myScore,[opp.user_id]:oppScore}});
+  }catch(e){console.warn('forfeit sync error',e)}
+ }
+ backToMenu();
+}
+$('exitMatch').onclick=requestExit;
+$('cancelExit').onclick=()=>$('exitModal').classList.remove('show');
+$('confirmExit').onclick=confirmExitMatch;
+
+$('friend').onclick=()=>createRoom('friend');
+$('aiGame').onclick=()=>{ const m=$('aiModal'); if(m)m.classList.add('show'); else alert('Ошибка интерфейса AI'); };
+$('readyBtn').onclick=markReady;
+$('closeAi').onclick=()=>$('aiModal').classList.remove('show');
+document.querySelectorAll('[data-ai]').forEach(b=>b.onclick=()=>startAiGame(b.dataset.ai));
+$('random').onclick=randomMatch;
+$('join').onclick=()=>joinRoom($('joinCode').value);
+$('leader').onclick=leaders;
+$('closeLead').onclick=()=>$('leadModal').classList.remove('show');
+$('leave').onclick=()=>{if(match?.mode==='random'&&!gameStarted){cancelRandomSearch();return}if(ch)sb.removeChannel(ch);clearInterval(matchmakingPoll);matchmakingPoll=null;clearInterval(lobbyPoll);clearInterval(readyPoll);clearInterval(turnPoll);clearAiTimers();match=null;gameStarted=false;coinRunning=false;gameMode='pvp';screen('menu')};
+$('cancelSearch').onclick=cancelRandomSearch;
+$('copy').onclick=async()=>{await navigator.clipboard.writeText(match.room_code);t('Код скопирован')};
+$('invite').onclick=async()=>{
+ const u=telegramRoomLink(match.room_code);
+ const text='Сыграем в PALM 50? Открой PALM 50 — комната уже будет подготовлена.';
+ try{
+   if(TG?.openTelegramLink) TG.openTelegramLink('https://t.me/share/url?url='+encodeURIComponent(u)+'&text='+encodeURIComponent(text));
+   else if(navigator.share) await navigator.share({title:'PALM 50',text,url:u});
+   else {await navigator.clipboard.writeText(u);t('Ссылка скопирована')}
+ }catch(e){try{await navigator.clipboard.writeText(u);t('Ссылка скопирована')}catch(_){alert(u)}}
+};
+$('endMenu').onclick=backToMenu;
+$('chatBtn').onclick=()=>{if(gameStarted)$('chatModal').classList.add('show')};
+$('chatClose').onclick=()=>$('chatModal').classList.remove('show');
+$('chatSend').onclick=()=>sendChat($('chatInput').value);
+$('chatInput').onkeydown=e=>{if(e.key==='Enter')sendChat(e.currentTarget.value)};
+document.querySelectorAll('#quickChat button').forEach(b=>b.onclick=()=>sendChat(b.textContent));
+$('challenge').onclick=shareChallenge;
+$('rematch').onclick=requestRematch;
+$('sound').onclick=()=>{soundOn=!soundOn;$('sound').textContent=soundOn?'🔊':'🔇'};
+$('profileBtn').onclick=()=>{renderFullProfile();modalOpen('profileModal')};
+$('dailyBtn').onclick=()=>{renderDaily();modalOpen('dailyModal')};
+$('tasksBtn').onclick=()=>{renderTasks();modalOpen('tasksModal')};
+$('shopBtn').onclick=()=>{renderShop();modalOpen('shopModal');syncPaidEntitlements(true)};
+$('dailyNav').onclick=()=>{renderDaily();modalOpen('dailyModal')};
+$('starsPlus').onclick=()=>{renderShop();modalOpen('shopModal');syncPaidEntitlements(true)};
+$('coinsPlus').onclick=()=>{renderShop();activeShop='skins';document.querySelectorAll('.shopTab').forEach(x=>x.classList.toggle('active',x.dataset.shop==='skins'));modalOpen('shopModal')};
+$('helpBtn').onclick=()=>alert('PALM 50: соперник загадывает число, ты ищешь его внутри ладони. Пока ты ищешь, соперник ставит крестики снаружи. Потом роли меняются.');
+
+$('closeProfile').onclick=()=>$('profileModal').classList.remove('show');
+$('closeDaily').onclick=()=>$('dailyModal').classList.remove('show');
+$('closeTasks').onclick=()=>$('tasksModal').classList.remove('show');
+$('closeShop').onclick=()=>$('shopModal').classList.remove('show');
+$('claimDaily').onclick=claimDailyReward;
+$('premiumBtn').onclick=buyPalmPlus;
+document.querySelectorAll('.shopTab').forEach(b=>b.onclick=()=>{activeShop=b.dataset.shop;document.querySelectorAll('.shopTab').forEach(x=>x.classList.toggle('active',x===b));renderShop()});
+
+
+// readyModal и coinModal изначально находятся внутри #game.
+// Переносим их в body, чтобы они были видимы и в лобби, когда #game скрыт.
+['readyModal','coinModal'].forEach(id=>{const el=$(id);if(el&&el.parentElement!==document.body)document.body.appendChild(el)});
+
+
+// ===== PALM 50 v0.6 META SYSTEMS =====
+function updateHomeMeta(){
+ try{ensureMetaProfile();const d=dayDiff(profile.lastDaily,todayKey()),can=d>=1;if($('dailyBadge'))$('dailyBadge').style.display=can?'flex':'none';if($('dailyHomeText'))$('dailyHomeText').textContent=can?'Награда готова':'Сегодня уже получено';if($('dailyBtn')){$('dailyBtn').disabled=!can;$('dailyBtn').textContent=can?'ПОЛУЧИТЬ':'ГОТОВО'}
+ const vals=[profile.tasks?.games||0,profile.tasks?.wins||0,profile.tasks?.games||0],req=[3,1,5];let done=0;for(let i=0;i<3;i++)if(vals[i]>=req[i])done++;if($('taskBadge'))$('taskBadge').textContent=Math.max(0,3-done);if($('taskHomeText'))$('taskHomeText').textContent=done+' / 3 выполнено';if($('taskHomeFill'))$('taskHomeFill').style.width=(done/3*100)+'%';}catch(e){}
+}
+function todayKey(){return new Date().toISOString().slice(0,10)}
+function dayDiff(a,b){if(!a||!b)return 999;return Math.round((new Date(b+'T12:00:00')-new Date(a+'T12:00:00'))/86400000)}
+function ensureMetaProfile(){
+ profile.owned=Array.isArray(profile.owned)?profile.owned:['classic_hand','classic_x','basic_reactions'];
+ profile.equipped=profile.equipped||{hand:'classic_hand',cross:'classic_x',reaction:'basic_reactions',frame:'frame_blue'};
+ if(!profile.equipped.frame)profile.equipped.frame='frame_blue';
+ profile.tasks=profile.tasks||{games:0,wins:0};profile.streak=profile.streak||0;profile.bestStreak=profile.bestStreak||0;profile.dailyStreak=profile.dailyStreak||0;
+ if(profile.taskDate!==todayKey()){profile.taskDate=todayKey();profile.tasks={games:0,wins:0};saveProfile()}
+}
+function updateDailyTasks(won){ensureMetaProfile();profile.tasks.games=(profile.tasks.games||0)+1;if(won)profile.tasks.wins=(profile.tasks.wins||0)+1}
+function modalOpen(id){ensureMetaProfile();$(id).classList.add('show')}
+function renderFullProfile(){
+ ensureMetaProfile();const u=tgUser(),wr=profile.games?Math.round(profile.wins/profile.games*100):0;
+ const av=u?.photo_url?'<img src="'+u.photo_url+'">':((me?.nickname||telegramNickname()||'P')[0]||'P').toUpperCase();
+ $('profileHero').innerHTML='<div class="profileAvatar '+(profile.equipped.frame||'frame_blue')+'">'+av+'</div><div><h3>'+escapeHtml(me?.nickname||$('nick').value||telegramNickname()||'Игрок')+'</h3><div>LVL '+profile.level+' · '+profile.xp+'/'+xpNeeded(profile.level)+' XP</div><div class="equipRow"><span class="equipTag">🪙 '+profile.coins+'</span><span class="equipTag">🔥 '+profile.streak+'</span></div></div>';
+ $('profileStats').innerHTML='<div class="statCard">Матчи<b>'+profile.games+'</b></div><div class="statCard">Победы<b>'+profile.wins+'</b></div><div class="statCard">Win rate<b>'+wr+'%</b></div><div class="statCard">Лучшая серия<b>'+profile.bestStreak+'</b></div>';
+ const ach=[['Первый бой','Сыграй 1 матч',profile.games>=1,'⚔️'],['Победитель','Выиграй 10 матчей',profile.wins>=10,'🏆'],['В огне','Серия из 5 побед',profile.bestStreak>=5,'🔥'],['Ветеран','Сыграй 100 матчей',profile.games>=100,'🎖️'],['PALM Master','Выиграй 100 матчей',profile.wins>=100,'👑']];
+ $('achievementList').innerHTML=ach.map(a=>'<div class="achievement '+(a[2]?'':'locked')+'"><div><b>'+a[0]+'</b><div class="miniNote">'+a[1]+'</div></div><span>'+(a[2]?a[3]:'🔒')+'</span></div>').join('');
+}
+function escapeHtml(v){return String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+const DAILY_REWARDS=[50,75,100,150,200,300,500];
+function renderDaily(){
+ ensureMetaProfile();const today=todayKey(),d=dayDiff(profile.lastDaily,today);let streak=profile.dailyStreak||0;if(d>1)streak=0;const can=d>=1;
+ const current=Math.min(streak,6);
+ $('dailyList').innerHTML=DAILY_REWARDS.map((r,i)=>'<div class="dailyDay '+(i<streak?'claimed ':'')+(i===current&&can?'current':'')+'"><b>Д'+(i+1)+'</b><span>Ежедневный бонус</span><b>🪙 '+r+'</b></div>').join('');
+ $('claimDaily').disabled=!can;$('claimDaily').textContent=can?'🎁 ЗАБРАТЬ '+DAILY_REWARDS[current]+' 🪙':'✅ СЕГОДНЯ УЖЕ ПОЛУЧЕНО';
+}
+function claimDailyReward(){
+ ensureMetaProfile();const today=todayKey(),d=dayDiff(profile.lastDaily,today);if(d<1)return;
+ if(d>1)profile.dailyStreak=0;const idx=Math.min(profile.dailyStreak||0,6),reward=DAILY_REWARDS[idx];profile.coins+=reward;profile.dailyStreak=(idx+1)%7;profile.lastDaily=today;saveProfile();renderDaily();renderShop();updateHomeMeta();t('+'+reward+' монет!');tone(760);haptic('medium');
+}
+function renderTasks(){
+ ensureMetaProfile();const tasks=[{n:'Сыграй 3 матча',p:profile.tasks.games||0,max:3,r:100},{n:'Выиграй матч',p:profile.tasks.wins||0,max:1,r:75},{n:'Сыграй 5 матчей',p:profile.tasks.games||0,max:5,r:150}];
+ $('taskList').innerHTML=tasks.map((x,i)=>{const done=Math.min(x.p,x.max),key='task_claim_'+todayKey()+'_'+i,claimed=localStorage.getItem(key)==='1';return '<div class="task"><div class="taskTop"><span>'+x.n+'</span><span>'+done+'/'+x.max+'</span></div><div class="taskBar"><div class="taskFill" style="width:'+Math.min(100,done/x.max*100)+'%"></div></div><button style="margin-top:8px;width:100%" data-claim-task="'+i+'" '+(done<x.max||claimed?'disabled':'')+'>'+(claimed?'✅ ПОЛУЧЕНО':'🪙 '+x.r+' ЗАБРАТЬ')+'</button></div>'}).join('');
+ document.querySelectorAll('[data-claim-task]').forEach(b=>b.onclick=()=>claimTask(+b.dataset.claimTask));
+}
+function claimTask(i){const rewards=[100,75,150],req=[3,1,5],vals=[profile.tasks.games||0,profile.tasks.wins||0,profile.tasks.games||0],key='task_claim_'+todayKey()+'_'+i;if(vals[i]<req[i]||localStorage.getItem(key)==='1')return;profile.coins+=rewards[i];localStorage.setItem(key,'1');saveProfile();renderTasks();renderShop();updateHomeMeta();t('+'+rewards[i]+' монет!')}
+const SHOP={
+ skins:[
+  {id:'classic_hand',icon:'✋',name:'Классическая',desc:'Тетрадный стиль',coins:0},
+  {id:'fire_hand',icon:'🔥',name:'Fire Palm',desc:'Огненное свечение',coins:1200},
+  {id:'galaxy_hand',icon:'🌌',name:'Galaxy Palm',desc:'Космическая энергия',coins:1800},
+  {id:'royal_hand',icon:'👑',name:'Royal Palm',desc:'Королевский стиль',stars:99,vip:true}
+ ],
+ crosses:[
+  {id:'classic_x',icon:'❌',name:'Marker Red',desc:'Классический маркер',coins:0},
+  {id:'neon_x',icon:'✖️',name:'Neon X',desc:'Неоновое свечение',coins:900},
+  {id:'fire_x',icon:'🔥',name:'Fire X',desc:'Огненный след',coins:1500}
+ ],
+ reactions:[
+  {id:'basic_reactions',icon:'😂',name:'Basic Pack',desc:'Базовые эмоции',coins:0},
+  {id:'meme_reactions',icon:'🤣',name:'Meme Pack',desc:'10 мем-реакций',stars:59},
+  {id:'vip_reactions',icon:'👑',name:'VIP Pack',desc:'Premium реакции',stars:79,vip:true}
+ ],
+ frames:[
+  {id:'frame_blue',icon:'🔵',name:'Blue Ring',desc:'Базовая рамка',coins:0},
+  {id:'frame_fire',icon:'🔥',name:'Fire Ring',desc:'Огненная рамка',coins:700},
+  {id:'frame_galaxy',icon:'🌌',name:'Galaxy Ring',desc:'Космическая рамка',coins:1100},
+  {id:'frame_gold',icon:'👑',name:'Gold Ring',desc:'Золотая рамка',coins:1600,vip:true}
+ ]
+};
+let activeShop='skins';
+function handPreview(cls){
+ const pts=$('hand')?.getAttribute('points')||'245,855 240,800 220,748 188,705 150,663 111,620 76,576 51,535 35,496 33,458 44,426 66,406 94,401 122,410 153,431 190,461 220,478 235,470 239,443 230,397 217,337 205,273 201,215 204,166 217,130 237,112 256,118 270,141 276,179 279,232 282,303 289,363 303,390 316,386 321,358 321,286 320,205 322,136 330,82 344,49 361,39 378,48 390,75 395,118 396,177 395,250 395,326 402,373 414,391 427,382 436,346 444,289 452,224 462,165 474,126 491,108 510,111 526,130 534,160 534,196 527,241 519,288 509,341 502,385 504,415 517,429 532,420 548,389 565,351 582,316 602,288 622,276 642,282 657,300 663,326 658,356 645,388 628,424 610,462 591,506 573,558 558,616 546,674 532,730 511,784 493,825 487,855';
+ let stroke=cls==='fire_hand'?'#ff6a2a':cls==='galaxy_hand'?'#9b72ff':cls==='royal_hand'?'#ffc62e':'#255fce';
+ return '<svg viewBox="0 0 700 900" aria-hidden="true"><polygon points="'+pts+'" fill="none" stroke="'+stroke+'" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+}
+function shopPreview(it){
+ if(it.id.endsWith('_hand'))return '<div class="shopVisual preview-'+it.id+'">'+(profile.equipped.hand===it.id?'<span class="skinCheck">✓</span>':'')+(it.vip?'<span class="vipFlag">VIP</span>':'')+handPreview(it.id)+'</div>';
+ if(it.id.includes('_x')){const c=it.id==='neon_x'?'#785eff':it.id==='fire_x'?'#ff5a24':'#df3029';return '<div class="shopVisual preview-'+it.id+'">'+(profile.equipped.cross===it.id?'<span class="skinCheck">✓</span>':'')+'<svg viewBox="0 0 100 100"><path d="M24 24L76 76M76 24L24 76" stroke="'+c+'" stroke-width="13" stroke-linecap="round"/></svg></div>'}
+ if(it.id.includes('reactions')){const faces=it.id==='meme_reactions'?'😂 😎 😜 😭 🤡 🤯 🤣 💀':it.id==='vip_reactions'?'👑 😈 💎 🤑 🥶 🔥 👏 ⚡':'😂 😎 😜 👏 🔥 ❤️';return '<div class="shopVisual preview-'+it.id+'">'+(profile.equipped.reaction===it.id?'<span class="skinCheck">✓</span>':'')+(it.vip?'<span class="vipFlag">VIP</span>':'')+faces+'</div>'}
+ if(it.id.startsWith('frame_'))return '<div class="shopVisual"><div class="framePreview '+it.id+'">🙂</div>'+(profile.equipped.frame===it.id?'<span class="skinCheck">✓</span>':'')+(it.vip?'<span class="vipFlag">VIP</span>':'')+'</div>';
+ return '<div class="shopVisual">'+it.icon+'</div>';
+}
+function renderShop(){
+ ensureMetaProfile();if($('shopCoinsTop'))$('shopCoinsTop').textContent=profile.coins;$('shopBalance').innerHTML='<span>Баланс</span><span>🪙 '+profile.coins+'</span>';if($('premiumBtn')){$('premiumBtn').textContent=profile.palmPlus?'👑 PALM PLUS АКТИВЕН':'⭐ 199 Stars / 30 дней';$('premiumBtn').disabled=!!profile.palmPlus;}
+ const eqKey=activeShop==='skins'?'hand':activeShop==='crosses'?'cross':activeShop==='reactions'?'reaction':'frame';
+ $('shopGrid').innerHTML=SHOP[activeShop].map(it=>{const owned=profile.owned.includes(it.id),equipped=profile.equipped[eqKey]===it.id;let label=equipped?'ВЫБРАНА':owned?'ИСПОЛЬЗОВАТЬ':it.stars?'⭐ '+it.stars+' Stars':'🪙 '+it.coins;return '<div class="shopItem releaseItem">'+shopPreview(it)+'<div class="shopText"><h4>'+it.name+'</h4><p>'+it.desc+'</p><button class="'+(equipped?'owned':'')+'" data-star="'+(it.stars?1:0)+'" data-buy="'+it.id+'" '+(equipped?'disabled':'')+'>'+label+'</button></div></div>'}).join('');
+ document.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>shopAction(b.dataset.buy));
+}
+function setPayState(text,type=''){
+ const el=$('payState');if(!el)return;el.style.display=text?'block':'none';el.className='payState '+type;el.textContent=text||'';
+}
+function starProductById(id){return Object.values(SHOP).flat().find(x=>x.id===id)}
+async function shopAction(id){
+ const list=Object.values(SHOP).flat(),it=list.find(x=>x.id===id);if(!it)return;const category=Object.keys(SHOP).find(k=>SHOP[k].some(x=>x.id===id)),eqKey=category==='skins'?'hand':category==='crosses'?'cross':category==='reactions'?'reaction':'frame';
+ if(profile.owned.includes(id)){profile.equipped[eqKey]=id;saveProfile();applyCosmetics();renderShop();return}
+ if(it.stars){await buyWithStars(id);return}
+ if(profile.coins<(it.coins||0)){t('Не хватает монет');return}
+ profile.coins-=it.coins;profile.owned.push(id);profile.equipped[eqKey]=id;saveProfile();applyCosmetics();renderShop();t('Куплено: '+it.name)
+}
+async function apiPost(url,body){
+ const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});let data={};try{data=await r.json()}catch(e){}if(!r.ok||data.ok===false)throw new Error(data.error||'Ошибка сервера');return data;
+}
+function applyEntitlements(data){
+ ensureMetaProfile();const ids=Array.isArray(data?.products)?data.products:[];
+ const previous=Array.isArray(profile.serverOwned)?profile.serverOwned:[];
+ profile.owned=profile.owned.filter(id=>!previous.includes(id));
+ ids.forEach(id=>{if(!profile.owned.includes(id))profile.owned.push(id)});
+ profile.serverOwned=[...ids];
+ profile.premiumUntil=data?.premiumUntil||null;
+ profile.palmPlus=!!(profile.premiumUntil&&new Date(profile.premiumUntil).getTime()>Date.now());
+ saveProfile();applyCosmetics();renderShop();
+}
+async function syncPaidEntitlements(silent=true){
+ if(!TG?.initData)return false;
+ try{const data=await apiPost(ENTITLEMENTS_API,{initData:TG.initData});applyEntitlements(data);return true}catch(e){if(!silent)setPayState('Не удалось обновить покупки: '+e.message,'err');return false}
+}
+async function waitForPurchase(purchaseId){
+ for(let i=0;i<8;i++){
+  try{const data=await apiPost(PAYMENT_STATUS_API,{initData:TG.initData,purchaseId});if(data.purchase?.status==='paid')return data.purchase}catch(e){}
+  await new Promise(r=>setTimeout(r,700+i*250));
+ }
+ return null;
+}
+async function buyWithStars(productId){
+ const it=starProductById(productId);if(!it)return;
+ if(!TG?.initData||!TG?.openInvoice){setPayState('Открой PALM 50 именно внутри Telegram, чтобы платить Stars.','err');return}
+ try{
+  setPayState('Создаём безопасный счёт Telegram…');
+  const data=await apiPost(PAYMENT_API,{initData:TG.initData,productId});
+  if(data.alreadyOwned){await syncPaidEntitlements(true);setPayState('✅ Этот предмет уже куплен.','ok');return}
+  setPayState('Ожидаем подтверждение оплаты…');
+  TG.openInvoice(data.invoiceLink,async status=>{
+   if(status==='cancelled'){setPayState('Оплата отменена.');return}
+   if(status==='failed'){setPayState('Платёж не прошёл. Попробуй ещё раз.','err');return}
+   if(status==='pending'){setPayState('Платёж обрабатывается Telegram…');return}
+   if(status==='paid'){
+    setPayState('Оплата получена. Разблокируем покупку…');
+    const paid=await waitForPurchase(data.purchaseId);
+    if(paid){await syncPaidEntitlements(true);setPayState('✅ Покупка активирована!','ok');tone(880);haptic('medium');t('Покупка активирована!')}
+    else setPayState('Оплата прошла, но сервер ещё синхронизирует покупку. Закрой и снова открой магазин через несколько секунд.');
+   }
+  });
+ }catch(e){console.error('Stars payment',e);setPayState('Ошибка оплаты: '+e.message,'err')}
+}
+async function buyPalmPlus(){
+ if(!TG?.initData||!TG?.openInvoice){setPayState('Открой PALM 50 внутри Telegram для покупки PALM PLUS.','err');return}
+ try{
+  setPayState('Создаём подписку PALM PLUS…');
+  const data=await apiPost(PAYMENT_API,{initData:TG.initData,productId:'palm_plus_monthly'});
+  if(data.alreadyOwned){await syncPaidEntitlements(true);setPayState('👑 PALM PLUS уже активен.','ok');return}
+  TG.openInvoice(data.invoiceLink,async status=>{
+   if(status==='paid'){setPayState('Оплата получена. Активируем PALM PLUS…');const paid=await waitForPurchase(data.purchaseId);if(paid){await syncPaidEntitlements(true);setPayState('👑 PALM PLUS активирован!','ok');tone(920);haptic('medium')}}
+   else if(status==='cancelled')setPayState('Оплата отменена.');
+   else if(status==='failed')setPayState('Платёж не прошёл.','err');
+   else setPayState('Платёж обрабатывается Telegram…');
+  });
+ }catch(e){setPayState('Ошибка оплаты: '+e.message,'err')}
+}
+
+function renderQuickChat(){
+ const box=$('quickChat');if(!box)return;ensureMetaProfile();
+ const set=profile.equipped.reaction==='meme_reactions'
+  ? ['😂 Та ты шо!','😎 Ну шо, погнали','🤣 Ахаха!','💀 Всё, приехал','🤡 Красавчик','🤯 Шо ты гонишь!']
+  : profile.equipped.reaction==='vip_reactions'
+  ? ['👑 Легчайше','😈 Не найдёшь','💎 Красиво','🥶 Холодно','🔥 Давай ещё','⚡ Быстро!']
+  : ['👋 Удачи!','🔥 Хорош!','😈 Не найдёшь!','😂 Ха-ха!','👏 Красиво!','⚔️ Реванш?'];
+ box.innerHTML=set.map(x=>'<button>'+x+'</button>').join('');
+ box.querySelectorAll('button').forEach(b=>b.onclick=()=>sendChat(b.textContent));
+}
+function applyCosmetics(){
+ ensureMetaProfile();const hand=$('hand');
+ if(hand){hand.classList.remove('hand-classic','hand-fire','hand-galaxy','hand-royal');const h=profile.equipped.hand;hand.classList.add(h==='fire_hand'?'hand-fire':h==='galaxy_hand'?'hand-galaxy':h==='royal_hand'?'hand-royal':'hand-classic');}
+ const x=profile.equipped.cross;document.documentElement.style.setProperty('--crossColor',x==='neon_x'?'#8d67ff':x==='fire_x'?'#ff5d2c':'#d92c2c');document.querySelectorAll('.xline').forEach(e=>{e.style.stroke=getComputedStyle(document.documentElement).getPropertyValue('--crossColor')||'#d92c2c';e.classList.toggle('x-neon',x==='neon_x');e.classList.toggle('x-fire',x==='fire_x')});
+ const frame=profile.equipped.frame||'frame_blue';const wrap=$('tgAvatarWrap');if(wrap){wrap.classList.remove('frame_blue','frame_fire','frame_gold','frame_galaxy');wrap.classList.add(frame)}
+ renderQuickChat();
+}
+
+
+loadProfile();
+if($('tgAvatarWrap')&&!$('tgAvatarWrap').children.length)$('tgAvatarWrap').innerHTML='<div class="tgAvatarFallback">P</div>';
+applyCosmetics();
+initTelegramMiniApp();
+loadPublicConfig();
+if(ok())sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+$('warn').textContent=ok()?'Supabase подключён':'Supabase не подключён';
+if(TG?.initData)setTimeout(()=>syncPaidEntitlements(true),500);
+const params=new URLSearchParams(location.search);
+const directRoom=(params.get('room')||'').trim().toUpperCase();
+const tgStart=TG?.initDataUnsafe?.start_param;
+const tgRoom=tgStart?.startsWith('room_')?tgStart.slice(5).toUpperCase():'';
+const incomingRoom=directRoom||tgRoom;
+if(incomingRoom){
+ $('joinCode').value=incomingRoom;
+ $('warn').textContent='Приглашение в комнату '+incomingRoom+' готово.';
+ if(tgUser()&&sb)setTimeout(()=>joinRoom(incomingRoom),250);
+}
+
+
+
+/* =========================================================
+   PALM50 RELEASE PATCH 2026-08-23
+   Daily tasks + live PvP opponent crosses + creator AI commands
+   + upgraded cosmetic effects
+   ========================================================= */
+(function(){
+  console.log('PALM50 RELEASE PATCH LOADED');
+
+  // 1) DAILY TASKS: grantRewards already updates profile games/wins,
+  // but daily tasks were not incremented. Do it once per rewarded match.
+  const __grantRewards = grantRewards;
+  grantRewards = function(won, mode){
+    const result = __grantRewards(won, mode);
+    try{
+      if(result && (result.xp > 0 || result.coins > 0)){
+        updateDailyTasks(!!won);
+        saveProfile();
+        try{ renderTasks(); }catch(e){}
+        try{ updateHomeMeta(); }catch(e){}
+      }
+    }catch(e){ console.warn('daily task patch', e); }
+    return result;
+  };
+
+  // 2) LIVE PvP OPPONENT CROSSES.
+  const oppCrosses = new Set();
+  window.PALM50_OPP_CROSSES = oppCrosses;
+
+  async function syncOpponentCrosses(){
+    if(gameMode!=='pvp' || !match || !opp || !sb) return;
+    try{
+      const {data,error}=await sb.from('match_crosses')
+        .select('cell_key')
+        .eq('match_id',match.id)
+        .eq('owner_id',opp.user_id);
+      if(error) throw error;
+      oppCrosses.clear();
+      (data||[]).forEach(r=>{ if(r.cell_key) oppCrosses.add(String(r.cell_key)); });
+      if($('oppScore')) $('oppScore').textContent=oppCrosses.size;
+      updateCellHud(oppCrosses.size);
+    }catch(e){ console.warn('opponent crosses sync',e); }
+  }
+
+  const __onEvt = onEvt;
+  onEvt = async function(e){
+    try{
+      if(e?.event_type==='cross' && e.actor_id!==me?.id && e.payload?.cell_key){
+        oppCrosses.add(String(e.payload.cell_key));
+      }
+    }catch(err){}
+    const result = await __onEvt(e);
+    if(e?.event_type==='cross' && e.actor_id!==me?.id){
+      try{ renderX(); }catch(err){}
+    }
+    return result;
+  };
+
+  const __load = load;
+  load = async function(){
+    const result = await __load();
+    await syncOpponentCrosses();
+    try{ renderX(); }catch(e){}
+    return result;
+  };
+
+  const __renderX = renderX;
+  renderX = function(){
+    const layer=$('xlayer');
+    if(!layer) return __renderX();
+    layer.innerHTML='';
+
+    function drawSet(set,color,type='me'){
+      if(!set) return;
+      for(const k of set){
+        const [gx,gy]=String(k).split(',').map(Number);
+        if(!Number.isFinite(gx)||!Number.isFinite(gy)) continue;
+        const x=gx*28,y=gy*28,p=3;
+        const segs=[[x+p,y+p,x+28-p,y+28-p],[x+28-p,y+p,x+p,y+28-p]];
+        for(const a of segs){
+          const l=document.createElementNS('http://www.w3.org/2000/svg','line');
+          l.setAttribute('x1',a[0]); l.setAttribute('y1',a[1]);
+          l.setAttribute('x2',a[2]); l.setAttribute('y2',a[3]);
+          l.setAttribute('stroke-linecap','round');
+          l.setAttribute('stroke-width',type==='opp'?'5.0':'5.8');
+          l.setAttribute('class','xline palm50-'+type+'-x');
+          l.style.stroke=color;
+          if(type==='me'){
+            const eq=profile?.equipped?.cross;
+            l.classList.toggle('x-neon',eq==='neon_x');
+            l.classList.toggle('x-fire',eq==='fire_x');
+          }
+          layer.appendChild(l);
+        }
+      }
+    }
+
+    const ownColor=getComputedStyle(document.documentElement).getPropertyValue('--crossColor').trim()||'#d92c2c';
+    drawSet(crosses,ownColor,'me');
+    if(gameMode==='ai') drawSet(aiCrosses,'#24272d','ai');
+    if(gameMode==='pvp') drawSet(oppCrosses,'#1677ff','opp');
+
+    if($('myScore')) $('myScore').textContent=crosses.size;
+    if(gameMode==='ai' && $('oppScore')) $('oppScore').textContent=aiCrosses.size;
+    if(gameMode==='pvp' && $('oppScore')) $('oppScore').textContent=oppCrosses.size;
+    updateCellHud(gameMode==='pvp'?oppCrosses.size:null);
+  };
+
+  const __backToMenu = backToMenu;
+  backToMenu = function(){
+    oppCrosses.clear();
+    return __backToMenu();
+  };
+
+  // 3) CREATOR COMMANDS. Hidden and accepted only during AI matches.
+  function creatorToast(s){ try{ t('👑 '+s); }catch(e){ console.log('CREATOR',s); } }
+  function unlock(id){ ensureMetaProfile(); if(!profile.owned.includes(id)) profile.owned.push(id); }
+  function creatorCommand(text){
+    if(gameMode!=='ai') return false;
+    const raw=String(text||'').trim();
+    const low=raw.toLowerCase();
+
+    if(low.startsWith('/artiargold')){
+      const m=raw.match(/^\/artiargold\s+(\d{1,5})\s*$/i);
+      if(!m){ creatorToast('Формат: /artiargold 9999'); return true; }
+      profile.coins=Math.max(0,Math.min(9999,parseInt(m[1],10)||0));
+      saveProfile(); updateHomeMeta(); try{renderShop();}catch(e){}
+      creatorToast('Монеты: '+profile.coins);
+      return true;
+    }
+
+    if(low==='/artiar freeskins'){
+      Object.values(SHOP).flat().forEach(it=>unlock(it.id));
+      saveProfile(); applyCosmetics(); renderShop(); updateHomeMeta();
+      creatorToast('Все скины открыты');
+      return true;
+    }
+
+    if(low==='/artiar crestneon'){
+      unlock('neon_x');
+      profile.equipped.cross='neon_x';
+      saveProfile(); applyCosmetics(); renderShop();
+      creatorToast('Neon X активирован');
+      return true;
+    }
+    return false;
+  }
+
+  const __sendChat = sendChat;
+  sendChat = async function(text){
+    const raw=String(text||'').trim();
+    if(raw.startsWith('/') && creatorCommand(raw)){
+      try{$('chatModal').classList.remove('show')}catch(e){}
+      try{$('chatInput').value=''}catch(e){}
+      return;
+    }
+    return __sendChat(text);
+  };
+
+  // 4) Stronger live cosmetic effects.
+  const style=document.createElement('style');
+  style.textContent=`
+    #hand{transition:stroke .25s ease,fill .25s ease,filter .25s ease,opacity .25s ease}
+    #hand.hand-fire{stroke:#ff4b17!important;stroke-width:8!important;fill:url(#handFire)!important;filter:drop-shadow(0 0 4px #ff451c) drop-shadow(0 0 10px #ff6a00) drop-shadow(0 0 18px rgba(255,89,0,.55))!important;animation:palmFirePulse 1.25s ease-in-out infinite alternate}
+    @keyframes palmFirePulse{from{filter:drop-shadow(0 0 3px #ff451c) drop-shadow(0 0 8px #ff8500)}to{filter:drop-shadow(0 0 7px #ff451c) drop-shadow(0 0 18px #ffae00)}}
+    #hand.hand-galaxy{stroke:#9b79ff!important;stroke-width:8!important;fill:url(#handGalaxy)!important;filter:drop-shadow(0 0 5px #734cff) drop-shadow(0 0 13px #a252ff) drop-shadow(0 0 22px rgba(76,54,255,.45))!important;animation:galaxyPulse 1.8s ease-in-out infinite alternate}
+    @keyframes galaxyPulse{from{opacity:.88}to{opacity:1}}
+    #hand.hand-royal{stroke:#e9aa00!important;stroke-width:9!important;fill:url(#handRoyal)!important;filter:drop-shadow(0 0 4px #ffcc32) drop-shadow(0 0 12px #ffd94e) drop-shadow(0 0 20px rgba(255,194,20,.5))!important}
+    .palm50-me-x.x-neon{stroke:#9b64ff!important;filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 5px #9d68ff) drop-shadow(0 0 10px #613cff) drop-shadow(0 0 15px #613cff)}
+    .palm50-me-x.x-fire{stroke:#ff4d20!important;filter:drop-shadow(0 0 2px #ffd47c) drop-shadow(0 0 6px #ff531d) drop-shadow(0 0 12px #ff8800)}
+    .palm50-opp-x{stroke:#1677ff!important;opacity:.52;filter:drop-shadow(0 0 2px rgba(22,119,255,.7));pointer-events:none}
+    .palm50-ai-x{opacity:.72;pointer-events:none}
+    .preview-fire_hand{background:radial-gradient(circle at 50% 72%,#ffb33d 0%,#ff4b1f 24%,#65170d 55%,#170402 100%)!important}
+    .preview-galaxy_hand{background:radial-gradient(circle at 35% 30%,#bf8cff,#6840ff 23%,#241557 55%,#080516 100%)!important}
+    .preview-royal_hand{background:radial-gradient(circle at 40% 35%,#fff7b5,#ffc928 32%,#9b5e00 63%,#2d1600 100%)!important}
+    .preview-neon_x{background:radial-gradient(circle,#5647ba,#171647 50%,#070817)!important}
+    .preview-fire_x{background:radial-gradient(circle,#ff7f35,#7e1b0e 45%,#210403)!important}
+  `;
+  document.head.appendChild(style);
+
+  try{ applyCosmetics(); }catch(e){}
+  try{ updateHomeMeta(); }catch(e){}
+})();
+
+</script></body></html>
