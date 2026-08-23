@@ -1,0 +1,1 @@
+const{json}=require('./_lib/common');module.exports=async(req,res)=>json(res,200,{ok:true,botUsername:(process.env.TELEGRAM_BOT_USERNAME||'').replace(/^@/,''),supportContact:process.env.SUPPORT_CONTACT||'',termsUrl:process.env.TERMS_URL||''});
