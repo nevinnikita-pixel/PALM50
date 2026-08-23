@@ -1,1 +1,0 @@
-const{json}=require('./_lib/common');module.exports=async(req,res)=>{const a=['TELEGRAM_BOT_TOKEN','TELEGRAM_BOT_USERNAME','TELEGRAM_WEBHOOK_SECRET','SUPABASE_URL','SUPABASE_SERVICE_ROLE_KEY','APP_URL','SUPPORT_CONTACT','TERMS_URL'];const checks=Object.fromEntries(a.map(k=>[k,!!process.env[k]]));const ok=Object.values(checks).every(Boolean);json(res,ok?200:500,{ok,checks})};
