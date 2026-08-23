@@ -1,0 +1,5 @@
+const crypto=require('crypto');const{json,body,validateInitData,tg,sel,ins,product}=require('./_lib/common');
+module.exports=async(req,res)=>{if(req.method!=='POST')return json(res,405,{ok:false,error:'POST required'});try{const b=await body(req),u=validateInitData(b.initData),p=product(b.productId);
+if(p.permanent){const f=await sel(`palm50_purchases?telegram_user_id=eq.${u.id}&product_id=eq.${encodeURIComponent(b.productId)}&status=eq.paid&select=id&limit=1`);if(f.length)return json(res,200,{ok:true,alreadyOwned:true})}
+const id=crypto.randomUUID(),payload=`palm50:${id}:${b.productId}:${u.id}`;await ins('palm50_purchases',{id,telegram_user_id:Number(u.id),product_id:b.productId,stars_amount:p.stars,status:'pending',invoice_payload:payload,payment_data:{created_from:'mini_app'}});
+const invoiceLink=await tg('createInvoiceLink',{title:p.title,description:p.description,payload,provider_token:'',currency:'XTR',prices:[{label:p.title,amount:p.stars}]});json(res,200,{ok:true,purchaseId:id,invoiceLink})}catch(e){console.error(e);json(res,400,{ok:false,error:e.message})}};

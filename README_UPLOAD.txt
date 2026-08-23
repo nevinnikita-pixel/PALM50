@@ -1,0 +1,1 @@
+404 /api/health means the API files were not deployed. Keep your current index.html and upload these api/, scripts/, terms.html and privacy.html files in the SAME Vercel project, then redeploy. After that /api/health should return ok:true.
